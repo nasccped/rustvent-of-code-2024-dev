@@ -6,6 +6,6 @@ use utils as u;
 
 fn main() {
     let input = u::get_file_content("inputs/day02.txt");
-    let result = d02::s1(input);
+    let result = d02::s2(input);
     println!("Result: {}", result);
 }
