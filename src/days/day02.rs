@@ -49,3 +49,41 @@ pub fn s1(input: Vec<String>) -> i32 {
         // NOTE: (6)
         .count() as i32
 }
+
+// Day 02: Solve 2
+pub fn s2(input: Vec<String>) -> i32 {
+    // TODO:
+    //  1. split each row by whitespaces
+    //  2. parse each lvl string to integer
+    //  3. collect the row lvl as report
+    //  4. pass the report to the report test
+    //  5. filter if safe else do test for each lvl removal
+    //  6. get the lenght
+    input
+        .iter()
+        .map(|row| {
+            // NOTE: (1)
+            row.split_whitespace()
+                // NOTE: (2)
+                .map(|lvl| lvl.trim().parse::<i32>().unwrap())
+                // NOTE: (3)
+                .collect::<Vec<i32>>()
+        })
+        // NOTE: (4)
+        .filter(|report| {
+            // NOTE: (5)
+            report_is_safe(report) || {
+                for i in 0..report.len() {
+                    let left = &mut report[0..i].to_vec();
+                    let right = &report[(i + 1)..];
+                    left.extend(right);
+                    if report_is_safe(left) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        })
+        // NOTE: (6)
+        .count() as i32
+}
