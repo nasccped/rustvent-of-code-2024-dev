@@ -1,3 +1,11 @@
+mod days;
+mod utils;
+
+use days::day01 as d01;
+use utils as u;
+
 fn main() {
-    println!("Welcome to the Rustvent of code 2024 test repository!");
+    let input = u::get_file_content("inputs/day01.txt");
+    let result = d01::s1(input);
+    println!("Result: {}", result);
 }
