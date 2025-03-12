@@ -31,7 +31,7 @@ pub fn s1(input: Vec<String>) -> i32 {
         .sum()
 }
 
-// Day 01: Solve 1
+// Day 01: Solve 2
 pub fn s2(input: Vec<String>) -> i32 {
     // TODO:
     //  1. create a HashMap (store left items)
