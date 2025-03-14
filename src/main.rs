@@ -1,11 +1,28 @@
 mod days;
+mod temp;
 mod utils;
 
 use days::{day01 as d01, day02 as d02, day04 as d04};
-use utils as u;
+use temp::{DayMap, DayMapTrait, DaySolve};
 
 fn main() {
-    let input = u::get_file_content("inputs/day04.txt");
-    let result = d04::s2(input);
-    println!("Result: {}", result);
+    let solves: &[(DaySolve, DaySolve)] = &[
+        (Some(d01::s1), Some(d01::s2)),
+        (Some(d02::s1), Some(d02::s2)),
+        (None, None),
+        (Some(d04::s1), Some(d04::s2)),
+    ];
+
+    let advent_map = DayMap::new_advent(solves);
+    let (targ_day, targ_solve) = (-1, 3);
+    println!("Result for day {}, solve {}", targ_day, targ_solve);
+    let result = advent_map.run(targ_day, targ_solve);
+    println!(
+        "Returned {}",
+        if let Some(val) = result {
+            val.to_string()
+        } else {
+            "None".to_string()
+        }
+    );
 }
