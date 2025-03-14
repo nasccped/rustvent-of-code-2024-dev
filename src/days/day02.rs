@@ -1,9 +1,18 @@
 fn report_is_safe(rep: &Vec<i32>) -> bool {
-    let start_diff = rep[1] - rep[0];
-    let mut cur_diff: i32;
+    let previous: Vec<&i32> = rep.iter().take(rep.len() - 1).collect();
+    let next: Vec<&i32> = rep.iter().skip(1).collect();
+    if !(previous.iter().zip(next.iter()).all(|(p, n)| p < n)
+        || previous
+            .into_iter()
+            .zip(next.into_iter())
+            .all(|(p, n)| p > n))
+    {
+        return false;
+    }
+    let mut rep = rep.clone();
+    rep.sort();
     for i in 1..(rep.len()) {
-        cur_diff = rep[i] - rep[i - 1];
-        if !(1..=3).contains(&cur_diff.abs()) || (cur_diff * start_diff) < 0 {
+        if !(1..=3).contains(&(rep[i] - rep[i - 1])) {
             return false;
         }
     }
