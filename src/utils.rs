@@ -1,5 +1,17 @@
 use std::fs;
 
+pub trait StrArrVecString {
+    // allow dead code. `into_vecstring` used only in test modules
+    #![allow(dead_code)]
+    fn into_vecstring(&self) -> Vec<String>;
+}
+
+impl<const N: usize> StrArrVecString for [&str; N] {
+    fn into_vecstring(&self) -> Vec<String> {
+        self.iter().map(|row| row.to_string()).collect()
+    }
+}
+
 pub fn get_file_content(path: &str) -> Vec<String> {
     let file = fs::read_to_string(path).expect(&format!("Unable to open file ({})", path));
     file.split("\n")
