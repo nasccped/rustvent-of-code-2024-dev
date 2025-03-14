@@ -14,7 +14,7 @@ fn main() {
     ];
 
     let advent_map = DayMap::new_advent(solves);
-    let (targ_day, targ_solve) = (-1, 3);
+    let (targ_day, targ_solve) = (1, 2);
     println!("Result for day {}, solve {}", targ_day, targ_solve);
     let result = advent_map.run(targ_day, targ_solve);
     println!(
