@@ -90,3 +90,50 @@ pub fn s2(input: Vec<String>) -> i32 {
 
     accum
 }
+
+#[cfg(test)]
+mod day04_tests {
+    use super::{s1, s2};
+
+    #[test]
+    fn solve1_test() {
+        let input: Vec<String> = [
+            "MMMSXXMASM",
+            "MSAMXMSMSA",
+            "AMXSXMAAMM",
+            "MSAMASMSMX",
+            "XMASAMXAMM",
+            "XXAMMXXAMA",
+            "SMSMSASXSS",
+            "SAXAMASAAA",
+            "MAMMMXMMMM",
+            "MXMXAXMASX",
+        ]
+        .iter()
+        .map(|row| row.to_string())
+        .collect();
+        let result = s1(input);
+        assert_eq!(result, 18);
+    }
+
+    #[test]
+    fn solve2_test() {
+        let input: Vec<String> = [
+            "MMMSXXMASM",
+            "MSAMXMSMSA",
+            "AMXSXMAAMM",
+            "MSAMASMSMX",
+            "XMASAMXAMM",
+            "XXAMMXXAMA",
+            "SMSMSASXSS",
+            "SAXAMASAAA",
+            "MAMMMXMMMM",
+            "MXMXAXMASX",
+        ]
+        .into_iter()
+        .map(|row| row.to_string())
+        .collect();
+        let result = s2(input);
+        assert_eq!(result, 9);
+    }
+}
