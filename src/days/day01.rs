@@ -47,23 +47,20 @@ pub fn s2(input: Vec<String>) -> i32 {
 #[cfg(test)]
 mod day01_tests {
     use super::{s1, s2};
+    use crate::utils::StrArrVecString;
 
     #[test]
     fn solve1_test() {
-        let input: Vec<String> = ["3   4", "4   3", "2   5", "1   3", "3   9", "3   3"]
-            .iter()
-            .map(|row| row.to_string())
-            .collect();
+        let input: Vec<String> =
+            ["3   4", "4   3", "2   5", "1   3", "3   9", "3   3"].into_vecstring();
         let result = s1(input);
         assert_eq!(result, 11);
     }
 
     #[test]
     fn solve2_test() {
-        let input: Vec<String> = ["3   4", "4   3", "2   5", "1   3", "3   9", "3   3"]
-            .iter()
-            .map(|row| row.to_string())
-            .collect();
+        let input: Vec<String> =
+            ["3   4", "4   3", "2   5", "1   3", "3   9", "3   3"].into_vecstring();
         let result = s2(input);
         assert_eq!(result, 31);
     }

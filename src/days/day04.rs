@@ -94,6 +94,7 @@ pub fn s2(input: Vec<String>) -> i32 {
 #[cfg(test)]
 mod day04_tests {
     use super::{s1, s2};
+    use crate::utils::StrArrVecString;
 
     #[test]
     fn solve1_test() {
@@ -109,9 +110,7 @@ mod day04_tests {
             "MAMMMXMMMM",
             "MXMXAXMASX",
         ]
-        .iter()
-        .map(|row| row.to_string())
-        .collect();
+        .into_vecstring();
         let result = s1(input);
         assert_eq!(result, 18);
     }
@@ -130,9 +129,7 @@ mod day04_tests {
             "MAMMMXMMMM",
             "MXMXAXMASX",
         ]
-        .into_iter()
-        .map(|row| row.to_string())
-        .collect();
+        .into_vecstring();
         let result = s2(input);
         assert_eq!(result, 9);
     }
