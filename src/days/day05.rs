@@ -30,20 +30,33 @@ impl PagesHelper {
     }
 }
 
-pub fn s1(input: Vec<String>) -> i32 {
-    let input: Vec<String> = input
-        .into_iter()
-        .map(|row| row.trim().to_string())
-        .collect();
+fn get_page_ordergin_rules(input: Vec<String>) -> Vec<String> {
     let hash_at = input
         .iter()
         .enumerate()
         .find(|(_, row)| row.starts_with("#"))
         .unwrap()
         .0;
+    input.into_iter().take(hash_at).collect()
+}
 
-    let page_order_rules: Vec<String> = input.clone().into_iter().take(hash_at).collect();
-    let page_numbers: Vec<String> = input.into_iter().skip(hash_at + 1).collect();
+fn get_page_number_updates(input: Vec<String>) -> Vec<String> {
+    let hash_at = input
+        .iter()
+        .enumerate()
+        .find(|(_, row)| row.starts_with("#"))
+        .unwrap()
+        .0;
+    input.into_iter().skip(hash_at + 1).collect()
+}
+
+pub fn s1(input: Vec<String>) -> i32 {
+    let input: Vec<String> = input
+        .into_iter()
+        .map(|row| row.trim().to_string())
+        .collect();
+    let page_order_rules = get_page_ordergin_rules(input.clone());
+    let page_numbers = get_page_number_updates(input);
 
     let mut page_order_map: HashMap<i32, PagesHelper> = HashMap::new();
 
