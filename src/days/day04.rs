@@ -1,9 +1,7 @@
-pub fn s1(input: Vec<String>) -> i32 {
-    let input: Vec<String> = input
-        .into_iter()
-        .map(|row| row.trim().to_string())
-        .collect();
+use crate::utils::VecStringTrim;
 
+pub fn s1(input: Vec<String>) -> i32 {
+    let input = input.foreach_trim();
     let mut accum = 0;
 
     for i in 0..(input.len()) {
@@ -53,10 +51,7 @@ pub fn s1(input: Vec<String>) -> i32 {
 }
 
 pub fn s2(input: Vec<String>) -> i32 {
-    let input: Vec<String> = input
-        .into_iter()
-        .map(|row| row.trim().to_string())
-        .collect();
+    let input = input.foreach_trim();
 
     let mut accum = 0;
 

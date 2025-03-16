@@ -1,3 +1,5 @@
+use crate::utils::VecStringTrim;
+
 fn report_is_safe(rep: &Vec<i32>) -> bool {
     let previous: Vec<&i32> = rep.iter().take(rep.len() - 1).collect();
     let next: Vec<&i32> = rep.iter().skip(1).collect();
@@ -20,11 +22,12 @@ fn report_is_safe(rep: &Vec<i32>) -> bool {
 }
 
 pub fn s1(input: Vec<String>) -> i32 {
+    let input = input.foreach_trim();
     input
         .iter()
         .map(|row| {
             row.split_whitespace()
-                .map(|lvl| lvl.trim().parse::<i32>().unwrap())
+                .map(|lvl| lvl.parse::<i32>().unwrap())
                 .collect::<Vec<i32>>()
         })
         .filter(|report| report_is_safe(report))
@@ -32,11 +35,12 @@ pub fn s1(input: Vec<String>) -> i32 {
 }
 
 pub fn s2(input: Vec<String>) -> i32 {
+    let input = input.foreach_trim();
     input
         .iter()
         .map(|row| {
             row.split_whitespace()
-                .map(|lvl| lvl.trim().parse::<i32>().unwrap())
+                .map(|lvl| lvl.parse::<i32>().unwrap())
                 .collect::<Vec<i32>>()
         })
         .filter(|report| {

@@ -1,3 +1,4 @@
+use crate::utils::VecStringTrim;
 use std::collections::HashMap;
 
 struct PagesHelper {
@@ -51,10 +52,7 @@ fn get_page_number_updates(input: Vec<String>) -> Vec<String> {
 }
 
 pub fn s1(input: Vec<String>) -> i32 {
-    let input: Vec<String> = input
-        .into_iter()
-        .map(|row| row.trim().to_string())
-        .collect();
+    let input = input.foreach_trim();
     let page_order_rules = get_page_ordergin_rules(input.clone());
     let page_numbers = get_page_number_updates(input);
 

@@ -1,9 +1,13 @@
+use crate::utils::VecStringTrim;
+use std::collections::HashMap;
+
 pub fn s1(input: Vec<String>) -> i32 {
+    let input = input.foreach_trim();
     let (mut left, mut right): (Vec<i32>, Vec<i32>) = (vec![], vec![]);
     for row in input {
         let mut items = row
             .split("   ")
-            .map(|item| item.trim().parse::<i32>().unwrap())
+            .map(|item| item.parse::<i32>().unwrap())
             .into_iter();
         left.push(items.next().unwrap());
         right.push(items.next().unwrap());
@@ -17,14 +21,14 @@ pub fn s1(input: Vec<String>) -> i32 {
 }
 
 pub fn s2(input: Vec<String>) -> i32 {
-    use std::collections::HashMap;
+    let input = input.foreach_trim();
     let mut left_map: HashMap<i32, (i32, i32)> = HashMap::new();
     let right_items: Vec<i32> = input
         .into_iter()
         .map(|row| {
             let mut pair = row
                 .split("   ")
-                .map(|item| item.trim().parse::<i32>().unwrap())
+                .map(|item| item.parse::<i32>().unwrap())
                 .into_iter();
             let first = pair.next().unwrap();
             if let Some((left_times, _)) = left_map.get_mut(&first) {
