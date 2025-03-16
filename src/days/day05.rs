@@ -31,7 +31,7 @@ impl PagesHelper {
     }
 }
 
-fn get_page_ordergin_rules(input: Vec<String>) -> Vec<String> {
+fn get_page_ordering_rules(input: Vec<String>) -> Vec<String> {
     let hash_at = input
         .iter()
         .enumerate()
@@ -53,7 +53,7 @@ fn get_page_number_updates(input: Vec<String>) -> Vec<String> {
 
 pub fn s1(input: Vec<String>) -> i32 {
     let input = input.foreach_trim();
-    let page_order_rules = get_page_ordergin_rules(input.clone());
+    let page_order_rules = get_page_ordering_rules(input.clone());
     let page_numbers = get_page_number_updates(input);
 
     let mut page_order_map: HashMap<i32, PagesHelper> = HashMap::new();
