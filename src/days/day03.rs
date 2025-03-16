@@ -53,23 +53,36 @@ pub fn s2(input: Vec<String>) -> i32 {
 #[cfg(test)]
 mod day03_tests {
     use super::{s1, s2};
+    use crate::utils::get_file_content;
     use crate::utils::StrArrVecString;
 
     #[test]
     fn solve1_test() {
-        let input: Vec<String> =
-            ["xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"]
-                .into_vecstring();
+        let input = ["xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"]
+            .into_vecstring();
         let result = s1(input);
         assert_eq!(result, 161);
     }
 
     #[test]
     fn solve2_test() {
-        let input: Vec<String> =
-            ["xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"]
-                .into_vecstring();
+        let input = ["xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"]
+            .into_vecstring();
         let result = s2(input);
         assert_eq!(result, 48);
+    }
+
+    #[test]
+    fn solve1_run() {
+        let input = get_file_content("inputs/day03.txt");
+        let result = s1(input);
+        assert_eq!(result, 184511516);
+    }
+
+    #[test]
+    fn solve2_run() {
+        let input = get_file_content("inputs/day03.txt");
+        let result = s2(input);
+        assert_eq!(result, 90044227);
     }
 }

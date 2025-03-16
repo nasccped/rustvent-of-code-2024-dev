@@ -62,11 +62,12 @@ pub fn s2(input: Vec<String>) -> i32 {
 #[cfg(test)]
 mod day02_tests {
     use super::{s1, s2};
+    use crate::utils::get_file_content;
     use crate::utils::StrArrVecString;
 
     #[test]
     fn solve1_test() {
-        let input: Vec<String> = [
+        let input = [
             "7 6 4 2 1",
             "1 2 7 8 9",
             "9 7 6 2 1",
@@ -81,7 +82,7 @@ mod day02_tests {
 
     #[test]
     fn solve2_test() {
-        let input: Vec<String> = [
+        let input = [
             "7 6 4 2 1",
             "1 2 7 8 9",
             "9 7 6 2 1",
@@ -92,5 +93,19 @@ mod day02_tests {
         .into_vecstring();
         let result = s2(input);
         assert_eq!(result, 4);
+    }
+
+    #[test]
+    fn solve1_run() {
+        let input = get_file_content("inputs/day02.txt");
+        let result = s1(input);
+        assert_eq!(result, 369);
+    }
+
+    #[test]
+    fn solve2_run() {
+        let input = get_file_content("inputs/day02.txt");
+        let result = s2(input);
+        assert_eq!(result, 428);
     }
 }
