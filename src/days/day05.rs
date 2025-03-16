@@ -116,7 +116,8 @@ pub fn s1(input: Vec<String>) -> i32 {
     middles.iter().sum()
 }
 
-pub fn s2(input: Vec<String>) -> i32 {
+#[allow(dead_code)]
+pub fn s2(_input: Vec<String>) -> i32 {
     // TODO:
     todo!()
 }
