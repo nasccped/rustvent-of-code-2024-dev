@@ -11,11 +11,11 @@ fn main() {
         (Some(d02::s1), Some(d02::s2)),
         (Some(d03::s1), Some(d03::s2)),
         (Some(d04::s1), Some(d04::s2)),
-        (Some(d05::s1), None),
+        (Some(d05::s1), Some(d05::s2)),
     ];
 
     let advent_map = DayMap::new_advent(solves);
-    let (targ_day, targ_solve) = (5, 1);
+    let (targ_day, targ_solve) = (5, 2);
     println!("Result for day {}, solve {}", targ_day, targ_solve);
     let result = advent_map.run(targ_day, targ_solve);
     println!(
