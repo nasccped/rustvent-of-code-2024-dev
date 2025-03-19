@@ -9,11 +9,11 @@ fn file_exists(path: &str) -> bool {
 
 type DayNumber = i32;
 type DayInput = Vec<String>;
-pub type DaySolve = Option<fn(Vec<String>) -> i32>;
+pub type DaySolve = Option<fn(Vec<String>) -> i64>;
 pub type DayMap = HashMap<DayNumber, (DayInput, (DaySolve, DaySolve))>;
 pub trait DayMapTrait {
     fn new_advent(solves: &[(DaySolve, DaySolve)]) -> DayMap;
-    fn run(&self, target_day: DayNumber, target_solve: i32) -> Option<i32>;
+    fn run(&self, target_day: DayNumber, target_solve: i32) -> Option<i64>;
 }
 impl DayMapTrait for DayMap {
     fn new_advent(solves: &[(DaySolve, DaySolve)]) -> Self {
@@ -41,7 +41,7 @@ impl DayMapTrait for DayMap {
         store
     }
 
-    fn run(&self, target_day: DayNumber, target_solve: i32) -> Option<i32> {
+    fn run(&self, target_day: DayNumber, target_solve: i32) -> Option<i64> {
         if let Some(node) = self.get(&target_day) {
             let inpu: Vec<String> = node.0.clone();
             match (target_solve, node.1 .0, node.1 .1) {

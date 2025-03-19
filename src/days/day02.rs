@@ -1,8 +1,8 @@
 use crate::utils::VecStringTrim;
 
-fn report_is_safe(rep: &Vec<i32>) -> bool {
-    let previous: Vec<&i32> = rep.iter().take(rep.len() - 1).collect();
-    let next: Vec<&i32> = rep.iter().skip(1).collect();
+fn report_is_safe(rep: &Vec<i64>) -> bool {
+    let previous: Vec<&i64> = rep.iter().take(rep.len() - 1).collect();
+    let next: Vec<&i64> = rep.iter().skip(1).collect();
     if !(previous.iter().zip(next.iter()).all(|(p, n)| p < n)
         || previous
             .into_iter()
@@ -21,27 +21,27 @@ fn report_is_safe(rep: &Vec<i32>) -> bool {
     true
 }
 
-pub fn s1(input: Vec<String>) -> i32 {
+pub fn s1(input: Vec<String>) -> i64 {
     let input = input.foreach_trim();
     input
         .iter()
         .map(|row| {
             row.split_whitespace()
-                .map(|lvl| lvl.parse::<i32>().unwrap())
-                .collect::<Vec<i32>>()
+                .map(|lvl| lvl.parse::<i64>().unwrap())
+                .collect::<Vec<i64>>()
         })
         .filter(|report| report_is_safe(report))
-        .count() as i32
+        .count() as i64
 }
 
-pub fn s2(input: Vec<String>) -> i32 {
+pub fn s2(input: Vec<String>) -> i64 {
     let input = input.foreach_trim();
     input
         .iter()
         .map(|row| {
             row.split_whitespace()
-                .map(|lvl| lvl.parse::<i32>().unwrap())
-                .collect::<Vec<i32>>()
+                .map(|lvl| lvl.parse::<i64>().unwrap())
+                .collect::<Vec<i64>>()
         })
         .filter(|report| {
             report_is_safe(report) || {
@@ -56,7 +56,7 @@ pub fn s2(input: Vec<String>) -> i32 {
                 return false;
             }
         })
-        .count() as i32
+        .count() as i64
 }
 
 #[cfg(test)]

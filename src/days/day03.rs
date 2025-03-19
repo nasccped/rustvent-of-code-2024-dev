@@ -1,6 +1,6 @@
 use regex::Regex;
 
-pub fn s1(input: Vec<String>) -> i32 {
+pub fn s1(input: Vec<String>) -> i64 {
     let mulre = Regex::new(r"mul\([0-9]+,[0-9]+\)").unwrap();
     let numre = Regex::new(r"[0-9]+").unwrap();
     let mut accum = 0;
@@ -12,15 +12,15 @@ pub fn s1(input: Vec<String>) -> i32 {
             .map(|m| {
                 numre
                     .find_iter(m)
-                    .map(|val| val.as_str().parse::<i32>().unwrap())
-                    .product::<i32>()
+                    .map(|val| val.as_str().parse::<i64>().unwrap())
+                    .product::<i64>()
             })
-            .sum::<i32>()
+            .sum::<i64>()
     }
     accum
 }
 
-pub fn s2(input: Vec<String>) -> i32 {
+pub fn s2(input: Vec<String>) -> i64 {
     let mulre = Regex::new(r"do\(\)|mul\([0-9]+,[0-9]+\)|don't\(\)").unwrap();
     let numre = Regex::new(r"[0-9]+").unwrap();
     let mut dont_called = false;
@@ -43,8 +43,8 @@ pub fn s2(input: Vec<String>) -> i32 {
             }
             accum += numre
                 .find_iter(m)
-                .map(|val| val.as_str().parse::<i32>().unwrap())
-                .product::<i32>();
+                .map(|val| val.as_str().parse::<i64>().unwrap())
+                .product::<i64>();
         }
     }
     accum

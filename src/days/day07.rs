@@ -8,7 +8,7 @@ enum OperationType {
     Con,
 }
 
-pub fn s1(input: Vec<String>) -> i32 {
+pub fn s1(input: Vec<String>) -> i64 {
     let input = input.foreach_trim();
     let oper_types = vec![OperationType::Add, OperationType::Mul];
     let mut accum: i64 = 0;
@@ -39,10 +39,10 @@ pub fn s1(input: Vec<String>) -> i32 {
             }
         }
     }
-    accum as i32
+    accum as i64
 }
 
-pub fn s2(input: Vec<String>) -> i32 {
+pub fn s2(input: Vec<String>) -> i64 {
     let input = input.foreach_trim();
     let oper_types = vec![OperationType::Add, OperationType::Mul, OperationType::Con];
     let mut accum: i64 = 0;
@@ -78,7 +78,7 @@ pub fn s2(input: Vec<String>) -> i32 {
             }
         }
     }
-    accum as i32
+    accum as i64
 }
 
 #[cfg(test)]

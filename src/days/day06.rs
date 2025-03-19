@@ -1,18 +1,18 @@
 use crate::utils::VecStringTrim;
 use std::collections::HashSet;
 
-pub fn s1(input: Vec<String>) -> i32 {
+pub fn s1(input: Vec<String>) -> i64 {
     let input = input.foreach_trim();
     let mut iy = input
         .iter()
         .enumerate()
         .find(|(_, row)| row.contains("^"))
         .unwrap()
-        .0 as i32;
-    let mut ix = input[iy as usize].find("^").unwrap() as i32;
+        .0 as i64;
+    let mut ix = input[iy as usize].find("^").unwrap() as i64;
 
-    let mut coordinates: HashSet<(i32, i32)> = HashSet::new();
-    let moves: [(i32, i32); 4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
+    let mut coordinates: HashSet<(i64, i64)> = HashSet::new();
+    let moves: [(i64, i64); 4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
     let mut target_move = 0;
 
     while (0..input.len()).contains(&(iy as usize)) && (0..input[0].len()).contains(&(ix as usize))
@@ -27,10 +27,10 @@ pub fn s1(input: Vec<String>) -> i32 {
         iy += moves[target_move].0;
         ix += moves[target_move].1;
     }
-    coordinates.len() as i32
+    coordinates.len() as i64
 }
 
-pub fn s2(input: Vec<String>) -> i32 {
+pub fn s2(input: Vec<String>) -> i64 {
     let input = input.foreach_trim();
     let char_input: Vec<Vec<char>> = input.iter().map(|row| row.chars().collect()).collect();
     let my = char_input.len();
@@ -62,10 +62,10 @@ pub fn s2(input: Vec<String>) -> i32 {
                 continue;
             }
             inp_copy[y][x] = '#';
-            let (mut cy, mut cx) = (iy as i32, ix as i32);
+            let (mut cy, mut cx) = (iy as i64, ix as i64);
             let moves = [(-1, 0), (0, 1), (1, 0), (0, -1)];
             let mut c_move = 0;
-            let mut coords: HashSet<(i32, i32, usize)> = HashSet::new();
+            let mut coords: HashSet<(i64, i64, usize)> = HashSet::new();
 
             while (0..my).contains(&(cy as usize)) && (0..mx).contains(&(cx as usize)) {
                 if inp_copy[cy as usize][cx as usize] == '#' {
