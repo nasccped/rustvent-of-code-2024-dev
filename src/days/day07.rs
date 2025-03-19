@@ -5,6 +5,7 @@ use itertools::Itertools;
 enum OperationType {
     Add,
     Mul,
+    Con,
 }
 
 pub fn s1(input: Vec<String>) -> i32 {
@@ -21,7 +22,7 @@ pub fn s1(input: Vec<String>) -> i32 {
             .split_whitespace()
             .map(|v| v.parse().unwrap())
             .collect();
-        let mut possibilities = (0..samples.len())
+        let possibilities = (0..samples.len())
             .map(|_| &oper_types)
             .multi_cartesian_product();
         for pos in possibilities {
@@ -29,7 +30,7 @@ pub fn s1(input: Vec<String>) -> i32 {
             let start = sampliter.next().unwrap();
             let res = pos.iter().zip(sampliter).fold(*start, |a, (o, v)| match o {
                 OperationType::Add => a + v,
-                OperationType::Mul => a * v,
+                _ => a * v,
             });
 
             if res == total {
@@ -38,11 +39,47 @@ pub fn s1(input: Vec<String>) -> i32 {
             }
         }
     }
-    println!("{}", accum);
     accum as i32
 }
 
-pub fn s2(input: Vec<String>) -> i32 {}
+pub fn s2(input: Vec<String>) -> i32 {
+    let input = input.foreach_trim();
+    let oper_types = vec![OperationType::Add, OperationType::Mul, OperationType::Con];
+    let mut accum: i64 = 0;
+
+    for row in input.iter() {
+        let mut row_vals = row.split(":");
+        let total: i64 = row_vals.next().unwrap().parse().unwrap();
+        let samples: Vec<i64> = row_vals
+            .next()
+            .unwrap()
+            .split_whitespace()
+            .map(|v| v.parse().unwrap())
+            .collect();
+        let possibilities = (0..samples.len())
+            .map(|_| &oper_types)
+            .multi_cartesian_product();
+        for pos in possibilities.into_iter() {
+            let mut sampliter = samples.iter();
+            let start = sampliter.next().unwrap();
+            let res = pos.iter().zip(sampliter).fold(*start, |a, (o, v)| match o {
+                OperationType::Add => a + v,
+                OperationType::Mul => a * v,
+                OperationType::Con => {
+                    let mut as_str = a.to_string();
+                    as_str.push_str(&(v.to_string()));
+                    as_str.parse::<i64>().unwrap()
+                }
+            });
+
+            if res == total {
+                accum += total;
+                break;
+            }
+        }
+    }
+    accum as i32
+}
 
 #[cfg(test)]
 mod day07_tests {
@@ -90,13 +127,13 @@ mod day07_tests {
     fn solve1_run() {
         let input = get_file_content("inputs/day07.txt");
         let result = s1(input);
-        assert_eq!(result, 663613490587);
+        assert_eq!(result as i64, 663613490587);
     }
 
     #[test]
     fn solve2_run() {
         let input = get_file_content("inputs/day07.txt");
         let result = s2(input);
-        assert_eq!(result, 1957);
+        assert_eq!(result as i64, 110365987435001);
     }
 }
