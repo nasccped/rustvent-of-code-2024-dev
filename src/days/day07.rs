@@ -8,6 +8,29 @@ enum OperationType {
     Con,
 }
 
+fn success_check(val: i64, samples: &Vec<i64>, opers: Vec<&OperationType>) -> bool {
+    let mut samples = samples.iter();
+    let mut res = samples.next().unwrap().to_owned();
+
+    for (s, o) in samples.zip(opers.into_iter()) {
+        if res > val {
+            return false;
+        }
+        match o {
+            OperationType::Add => res += s,
+            OperationType::Mul => res *= s,
+            OperationType::Con => {
+                let mut restring = res.to_string();
+                let sample_string = s.to_string();
+                restring.push_str(&sample_string);
+                res = restring.parse().unwrap();
+            }
+        }
+    }
+
+    res == val
+}
+
 pub fn s1(input: Vec<String>) -> i64 {
     let input = input.foreach_trim();
     let oper_types = vec![OperationType::Add, OperationType::Mul];
@@ -26,14 +49,7 @@ pub fn s1(input: Vec<String>) -> i64 {
             .map(|_| &oper_types)
             .multi_cartesian_product();
         for pos in possibilities {
-            let mut sampliter = samples.iter();
-            let start = sampliter.next().unwrap();
-            let res = pos.iter().zip(sampliter).fold(*start, |a, (o, v)| match o {
-                OperationType::Add => a + v,
-                _ => a * v,
-            });
-
-            if res == total {
+            if success_check(total, &samples, pos.clone()) {
                 accum += total;
                 break;
             }
@@ -60,19 +76,7 @@ pub fn s2(input: Vec<String>) -> i64 {
             .map(|_| &oper_types)
             .multi_cartesian_product();
         for pos in possibilities.into_iter() {
-            let mut sampliter = samples.iter();
-            let start = sampliter.next().unwrap();
-            let res = pos.iter().zip(sampliter).fold(*start, |a, (o, v)| match o {
-                OperationType::Add => a + v,
-                OperationType::Mul => a * v,
-                OperationType::Con => {
-                    let mut as_str = a.to_string();
-                    as_str.push_str(&(v.to_string()));
-                    as_str.parse::<i64>().unwrap()
-                }
-            });
-
-            if res == total {
+            if success_check(total, &samples, pos.clone()) {
                 accum += total;
                 break;
             }
