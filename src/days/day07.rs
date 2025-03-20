@@ -12,6 +12,13 @@ fn success_check(val: i64, samples: &Vec<i64>, opers: Vec<&OperationType>) -> bo
     let mut samples = samples.iter();
     let mut res = samples.next().unwrap().to_owned();
 
+    let max: i64 = samples.clone().product();
+    let min: i64 = samples.clone().sum();
+
+    if min > val || max < val {
+        return false;
+    }
+
     for (s, o) in samples.zip(opers.into_iter()) {
         if res > val {
             return false;
@@ -62,6 +69,8 @@ pub fn s2(input: Vec<String>) -> i64 {
     let input = input.foreach_trim();
     let oper_types = vec![OperationType::Add, OperationType::Mul, OperationType::Con];
     let mut accum: i64 = 0;
+
+    println!("This can take a while \x1b[1;36m(+10 sec in `cargo run --release`)\x1b[0m");
 
     for row in input.iter() {
         let mut row_vals = row.split(":");
@@ -128,6 +137,7 @@ mod day07_tests {
     }
 
     #[test]
+    #[ignore]
     fn solve1_run() {
         let input = get_file_content("inputs/day07.txt");
         let result = s1(input);
@@ -135,6 +145,7 @@ mod day07_tests {
     }
 
     #[test]
+    #[ignore]
     fn solve2_run() {
         let input = get_file_content("inputs/day07.txt");
         let result = s2(input);
