@@ -11,13 +11,6 @@ fn success_check(val: i64, samples: &Vec<i64>, opers: Vec<&OperationType>) -> bo
     let mut samples = samples.iter();
     let mut res = samples.next().unwrap().to_owned();
 
-    let max: i64 = samples.clone().product();
-    let min: i64 = samples.clone().sum();
-
-    if min > val || max < val {
-        return false;
-    }
-
     for (s, o) in samples.zip(opers.into_iter()) {
         if res > val {
             return false;
