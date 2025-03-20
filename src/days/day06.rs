@@ -1,90 +1,110 @@
 use crate::utils::VecStringTrim;
 use std::collections::HashSet;
 
+const MOVES: [(i32, i32); 4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
+
+fn is_infinite_traversal(grid: Vec<String>, mut y: i32, mut x: i32) -> bool {
+    let mut step_path = HashSet::new();
+    let mut cur_move: usize = 0;
+
+    while (0..grid.len() as i32).contains(&y) && (0..grid[0].len() as i32).contains(&x) {
+        let cur_char = grid[y as usize].chars().nth(x as usize).unwrap();
+        if cur_char == '#' {
+            y -= MOVES[cur_move].0;
+            x -= MOVES[cur_move].1;
+            cur_move = (cur_move + 1) % 4;
+            continue;
+        }
+        let cur_step = (y, x, cur_move);
+        if step_path.contains(&cur_step) {
+            return true;
+        }
+        step_path.insert(cur_step);
+        y += MOVES[cur_move].0;
+        x += MOVES[cur_move].1;
+    }
+
+    false
+}
+
+fn get_locations(grid: Vec<String>, ini_y: usize, ini_x: usize) -> HashSet<(i32, i32)> {
+    let mut result = HashSet::new();
+    let mut y: i32 = ini_y as i32;
+    let mut x: i32 = ini_x as i32;
+    let mut cur_move_ind: usize = 0;
+
+    while (0..grid.len() as i32).contains(&y) && (0..grid[0].len() as i32).contains(&x) {
+        let cur_char = grid
+            .iter()
+            .nth(y as usize)
+            .unwrap()
+            .chars()
+            .nth(x as usize)
+            .unwrap();
+
+        let cur_move_pair = MOVES[cur_move_ind];
+
+        if cur_char == '#' {
+            y -= cur_move_pair.0;
+            x -= cur_move_pair.1;
+            cur_move_ind = (cur_move_ind + 1) % 4;
+            continue;
+        }
+        result.insert((y, x));
+        y += cur_move_pair.0;
+        x += cur_move_pair.1;
+    }
+
+    result
+}
+
 pub fn s1(input: Vec<String>) -> i64 {
     let input = input.foreach_trim();
-    let mut iy = input
+    let iy = input
         .iter()
         .enumerate()
         .find(|(_, row)| row.contains("^"))
         .unwrap()
-        .0 as i64;
-    let mut ix = input[iy as usize].find("^").unwrap() as i64;
-
-    let mut coordinates: HashSet<(i64, i64)> = HashSet::new();
-    let moves: [(i64, i64); 4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
-    let mut target_move = 0;
-
-    while (0..input.len()).contains(&(iy as usize)) && (0..input[0].len()).contains(&(ix as usize))
-    {
-        if input[iy as usize].chars().nth(ix as usize).unwrap() == '#' {
-            iy -= moves[target_move].0;
-            ix -= moves[target_move].1;
-            target_move = (target_move + 1) % 4;
-            continue;
-        }
-        coordinates.insert((iy, ix));
-        iy += moves[target_move].0;
-        ix += moves[target_move].1;
-    }
-    coordinates.len() as i64
+        .0;
+    let ix = input[iy as usize].find("^").unwrap();
+    get_locations(input, iy, ix).len() as i64
 }
 
 pub fn s2(input: Vec<String>) -> i64 {
     let input = input.foreach_trim();
-    let char_input: Vec<Vec<char>> = input.iter().map(|row| row.chars().collect()).collect();
-    let my = char_input.len();
-    let mx = char_input[0].len();
-    let iy = char_input
+    let ini_y = input.iter().position(|row| row.contains("^")).unwrap();
+    let ini_x = input
         .iter()
-        .enumerate()
-        .find(|(_, row)| row.contains(&'^'))
+        .nth(ini_y)
         .unwrap()
-        .0;
-    let ix = char_input
-        .iter()
-        .nth(iy)
-        .unwrap()
-        .iter()
-        .enumerate()
-        .find(|(_, c)| *c == &'^')
-        .unwrap()
-        .0;
+        .chars()
+        .position(|c| c == '^')
+        .unwrap();
+    let mut pos_moves = get_locations(input.clone(), ini_y, ini_x);
+    pos_moves.remove(&(ini_y as i32, ini_x as i32));
 
     let mut accum = 0;
 
-    println!("This will take a long time (+3 min, probably)!");
-
-    for y in 0..input.len() {
-        for x in 0..input.iter().nth(y).unwrap().len() {
-            let mut inp_copy = char_input.clone();
-            if inp_copy[y][x] == '#' || inp_copy[y][x] == '^' {
-                continue;
-            }
-            inp_copy[y][x] = '#';
-            let (mut cy, mut cx) = (iy as i64, ix as i64);
-            let moves = [(-1, 0), (0, 1), (1, 0), (0, -1)];
-            let mut c_move = 0;
-            let mut coords: HashSet<(i64, i64, usize)> = HashSet::new();
-
-            while (0..my).contains(&(cy as usize)) && (0..mx).contains(&(cx as usize)) {
-                if inp_copy[cy as usize][cx as usize] == '#' {
-                    cy -= moves[c_move].0;
-                    cx -= moves[c_move].1;
-                    c_move = (c_move + 1) % 4;
-                    continue;
+    for (y, x) in pos_moves.into_iter() {
+        let input_clone: Vec<String> = input
+            .clone()
+            .iter()
+            .enumerate()
+            .map(|(i, row)| {
+                if i == y as usize {
+                    let mut charray: Vec<char> = row.chars().collect();
+                    charray[x as usize] = '#';
+                    charray.iter().collect::<String>()
+                } else {
+                    row.to_owned()
                 }
-                if coords.contains(&(cy, cx, c_move)) {
-                    accum += 1;
-                    break;
-                }
-                coords.insert((cy, cx, c_move));
-                cy += moves[c_move].0;
-                cx += moves[c_move].1;
-            }
+            })
+            .collect();
+
+        if is_infinite_traversal(input_clone, ini_y as i32, ini_x as i32) {
+            accum += 1;
         }
     }
-
     accum
 }
 
@@ -140,7 +160,6 @@ mod day06_tests {
     }
 
     #[test]
-    #[ignore]
     fn solve2_run() {
         let input = get_file_content("inputs/day06.txt");
         let result = s2(input);
