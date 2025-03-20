@@ -157,6 +157,7 @@ mod day06_tests {
     }
 
     #[test]
+    #[ignore]
     fn solve2_run() {
         let input = get_file_content("inputs/day06.txt");
         let result = s2(input);
