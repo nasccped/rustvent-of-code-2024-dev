@@ -1,6 +1,6 @@
 use std::fs;
 
-pub trait VecStringTrim {
+trait VecStringTrim {
     fn foreach_trim(&self) -> Self;
 }
 
@@ -27,5 +27,6 @@ pub fn get_file_content(path: &str) -> Vec<String> {
     file.split("\n")
         .filter(|row| !row.is_empty())
         .map(|row| row.to_string())
-        .collect()
+        .collect::<Vec<String>>()
+        .foreach_trim()
 }

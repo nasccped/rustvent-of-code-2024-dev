@@ -1,7 +1,4 @@
-use crate::utils::VecStringTrim;
-
 pub fn s1(input: Vec<String>) -> i64 {
-    let input = input.foreach_trim();
     let mut accum = 0;
 
     for i in 0..(input.len()) {
@@ -51,8 +48,6 @@ pub fn s1(input: Vec<String>) -> i64 {
 }
 
 pub fn s2(input: Vec<String>) -> i64 {
-    let input = input.foreach_trim();
-
     let mut accum = 0;
 
     for y in 1..(input.len() - 1) {

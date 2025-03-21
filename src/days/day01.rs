@@ -1,8 +1,6 @@
-use crate::utils::VecStringTrim;
 use std::collections::HashMap;
 
 pub fn s1(input: Vec<String>) -> i64 {
-    let input = input.foreach_trim();
     let (mut left, mut right): (Vec<i64>, Vec<i64>) = (vec![], vec![]);
     for row in input {
         let mut items = row
@@ -21,7 +19,6 @@ pub fn s1(input: Vec<String>) -> i64 {
 }
 
 pub fn s2(input: Vec<String>) -> i64 {
-    let input = input.foreach_trim();
     let mut left_map: HashMap<i64, (i64, i64)> = HashMap::new();
     let right_items: Vec<i64> = input
         .into_iter()

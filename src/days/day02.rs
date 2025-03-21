@@ -1,5 +1,3 @@
-use crate::utils::VecStringTrim;
-
 fn report_is_safe(rep: &Vec<i64>) -> bool {
     let previous: Vec<&i64> = rep.iter().take(rep.len() - 1).collect();
     let next: Vec<&i64> = rep.iter().skip(1).collect();
@@ -22,7 +20,6 @@ fn report_is_safe(rep: &Vec<i64>) -> bool {
 }
 
 pub fn s1(input: Vec<String>) -> i64 {
-    let input = input.foreach_trim();
     input
         .iter()
         .map(|row| {
@@ -35,7 +32,6 @@ pub fn s1(input: Vec<String>) -> i64 {
 }
 
 pub fn s2(input: Vec<String>) -> i64 {
-    let input = input.foreach_trim();
     input
         .iter()
         .map(|row| {

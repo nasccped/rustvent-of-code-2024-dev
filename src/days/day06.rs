@@ -1,4 +1,3 @@
-use crate::utils::VecStringTrim;
 use std::collections::HashSet;
 
 const MOVES: [(i32, i32); 4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
@@ -59,7 +58,6 @@ fn get_locations(grid: Vec<String>, ini_y: usize, ini_x: usize) -> HashSet<(i32,
 }
 
 pub fn s1(input: Vec<String>) -> i64 {
-    let input = input.foreach_trim();
     let iy = input
         .iter()
         .enumerate()
@@ -71,7 +69,6 @@ pub fn s1(input: Vec<String>) -> i64 {
 }
 
 pub fn s2(input: Vec<String>) -> i64 {
-    let input = input.foreach_trim();
     let ini_y = input.iter().position(|row| row.contains("^")).unwrap();
     let ini_x = input
         .iter()

@@ -1,4 +1,3 @@
-use crate::utils::VecStringTrim;
 use itertools::Itertools;
 
 #[derive(Copy, Clone, Debug)]
@@ -39,7 +38,6 @@ fn success_check(val: i64, samples: &Vec<i64>, opers: Vec<&OperationType>) -> bo
 }
 
 pub fn s1(input: Vec<String>) -> i64 {
-    let input = input.foreach_trim();
     let oper_types = vec![OperationType::Add, OperationType::Mul];
     let mut accum: i64 = 0;
 
@@ -66,7 +64,6 @@ pub fn s1(input: Vec<String>) -> i64 {
 }
 
 pub fn s2(input: Vec<String>) -> i64 {
-    let input = input.foreach_trim();
     let oper_types = vec![OperationType::Add, OperationType::Mul, OperationType::Con];
     let mut accum: i64 = 0;
 
