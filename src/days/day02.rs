@@ -1,55 +1,83 @@
-fn report_is_safe(rep: &Vec<i64>) -> bool {
-    let previous: Vec<&i64> = rep.iter().take(rep.len() - 1).collect();
-    let next: Vec<&i64> = rep.iter().skip(1).collect();
-    if !(previous.iter().zip(next.iter()).all(|(p, n)| p < n)
-        || previous
-            .into_iter()
-            .zip(next.into_iter())
-            .all(|(p, n)| p > n))
-    {
-        return false;
+#[derive(Clone)]
+struct Report {
+    levels: Vec<i64>,
+}
+
+impl Report {
+    fn from_string(levels: String) -> Self {
+        let levels: Vec<i64> = levels
+            .split_whitespace()
+            .map(|val| val.parse().unwrap())
+            .collect();
+        Report { levels }
     }
-    let mut rep = rep.clone();
-    rep.sort();
-    for i in 1..(rep.len()) {
-        if !(1..=3).contains(&(rep[i] - rep[i - 1])) {
-            return false;
+
+    fn is_safe(&self) -> bool {
+        let levels_ref = &self.levels;
+        let length = levels_ref.len();
+        let previous: &[i64] = &levels_ref[..(length - 1)];
+        let next: &[i64] = &levels_ref[1..];
+
+        match (
+            previous.iter().zip(next.iter()).all(|(p, n)| p < n),
+            previous.iter().zip(next.iter()).all(|(p, n)| p > n),
+        ) {
+            (false, false) => return false,
+            _ => {}
         }
+
+        let positives = 1..=3;
+        let negatives: Vec<i64> = positives.clone().map(|val| val * -1).collect();
+
+        for (p, n) in previous.into_iter().zip(next.into_iter()) {
+            let diff = &(p - n);
+            if !positives.contains(diff) && !negatives.contains(diff) {
+                return false;
+            }
+        }
+
+        true
     }
-    true
+
+    fn remove_from_ind(&mut self, index: usize) {
+        self.levels.remove(index);
+    }
+
+    fn lvl_length(&self) -> usize {
+        self.levels.len()
+    }
 }
 
 pub fn s1(input: Vec<String>) -> i64 {
-    input
-        .iter()
-        .map(|row| {
-            row.split_whitespace()
-                .map(|lvl| lvl.parse::<i64>().unwrap())
-                .collect::<Vec<i64>>()
-        })
-        .filter(|report| report_is_safe(report))
+    let reports: Vec<Report> = input
+        .into_iter()
+        .map(|row| Report::from_string(row))
+        .collect();
+
+    reports
+        .into_iter()
+        .filter(|report| report.is_safe())
         .count() as i64
 }
 
 pub fn s2(input: Vec<String>) -> i64 {
-    input
-        .iter()
-        .map(|row| {
-            row.split_whitespace()
-                .map(|lvl| lvl.parse::<i64>().unwrap())
-                .collect::<Vec<i64>>()
-        })
+    let reports: Vec<Report> = input
+        .into_iter()
+        .map(|row| Report::from_string(row))
+        .collect();
+
+    reports
+        .into_iter()
         .filter(|report| {
-            report_is_safe(report) || {
-                for i in 0..report.len() {
-                    let left = &mut report[0..i].to_vec();
-                    let right = &report[(i + 1)..];
-                    left.extend(right);
-                    if report_is_safe(left) {
+            report.is_safe() || {
+                for i in 0..report.lvl_length() {
+                    let mut repclone = report.clone();
+                    repclone.remove_from_ind(i);
+                    if repclone.is_safe() {
                         return true;
                     }
                 }
-                return false;
+                false
             }
         })
         .count() as i64
