@@ -26,12 +26,16 @@ impl Report {
             _ => {}
         }
 
-        let positives = 1..=3;
-        let negatives: Vec<i64> = positives.clone().map(|val| val * -1).collect();
+        let mut cloned = self.levels.clone();
+        cloned.sort();
+
+        let previous = &cloned[..(length - 1)];
+        let next = &cloned[1..];
+        let scope = 1..=3;
 
         for (p, n) in previous.into_iter().zip(next.into_iter()) {
-            let diff = &(p - n);
-            if !positives.contains(diff) && !negatives.contains(diff) {
+            let diff = &(n - p);
+            if !scope.contains(diff) {
                 return false;
             }
         }
