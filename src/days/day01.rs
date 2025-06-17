@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+const LEFT_RIGHT_SEPARATOR: &str = "   ";
+
 /// solve 1
 pub fn s1(input: Vec<String>) -> i64 {
     // prepare vector pairs (left / right)
@@ -8,7 +10,9 @@ pub fn s1(input: Vec<String>) -> i64 {
     // for each row in input
     for row in input {
         // split and get values as int 64
-        let mut vals = row.split("   ").map(|val| val.parse::<i64>().unwrap());
+        let mut vals = row
+            .split(LEFT_RIGHT_SEPARATOR)
+            .map(|val| val.parse::<i64>().unwrap());
         // use closure function to get next element
         let mut next = || vals.next().unwrap();
         pairs.0.push(next()); // push first to left
@@ -41,7 +45,9 @@ pub fn s2(input: Vec<String>) -> i64 {
 
     for row in input {
         // same as function above
-        let mut vals = row.split("   ").map(|val| val.parse::<i64>().unwrap());
+        let mut vals = row
+            .split(LEFT_RIGHT_SEPARATOR)
+            .map(|val| val.parse::<i64>().unwrap());
         let mut next = || vals.next().unwrap();
 
         // in hashmap
