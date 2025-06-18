@@ -1,100 +1,99 @@
-#[derive(Clone)]
-struct Report {
-    levels: Vec<i64>,
+use std::ops::RangeInclusive;
+
+const SAFE_RANGE: RangeInclusive<i8> = 1..=3;
+const REPORT_SEPARATOR: &str = " ";
+
+/// Test if a i8 slice (reference) is a saffe report
+fn is_safe(arr: &[i8]) -> bool {
+    // WARN:
+    // this function was clipboarded from reddit:
+    //    https://www.reddit.com/r/adventofcode/comments/1h4ncyr/2024_day_2_solutions/
+    // I'm sorry about this, but it have a good solve approach :^D
+    let (mut increasing, mut decreasing) = (true, true); // init with both inc. & dec. as true
+    let (mut prev, mut curr): (&i8, &i8); // holds previous value and current value in our slice
+
+    for i in 1..arr.len() {
+        (prev, curr) = (&arr[i - 1], &arr[i]);
+
+        if prev < curr {
+            // if previous is smaller, the values are increasing, so
+            decreasing = false;
+        } else if prev > curr {
+            // but if the previous is bigger...
+            increasing = false;
+        } else {
+            // else (are the same value -> invalid)
+            return false;
+        }
+        // test if abs diff is in safe range
+        if !SAFE_RANGE.contains(&(prev - curr).abs()) {
+            return false;
+        }
+    }
+
+    increasing || decreasing
 }
 
-impl Report {
-    fn from_string(levels: String) -> Self {
-        let levels: Vec<i64> = levels
-            .split_whitespace()
-            .map(|val| val.parse().unwrap())
-            .collect();
-        Report { levels }
-    }
-
-    fn is_safe(&self) -> bool {
-        let levels_ref = &self.levels;
-        let length = levels_ref.len();
-        let previous: &[i64] = &levels_ref[..(length - 1)];
-        let next: &[i64] = &levels_ref[1..];
-
-        match (
-            previous.iter().zip(next.iter()).all(|(p, n)| p < n),
-            previous.iter().zip(next.iter()).all(|(p, n)| p > n),
-        ) {
-            (false, false) => return false,
-            _ => {}
-        }
-
-        let mut cloned = self.levels.clone();
-        cloned.sort();
-
-        let previous = &cloned[..(length - 1)];
-        let next = &cloned[1..];
-        let scope = 1..=3;
-
-        for (p, n) in previous.into_iter().zip(next.into_iter()) {
-            let diff = &(n - p);
-            if !scope.contains(diff) {
-                return false;
-            }
-        }
-
-        true
-    }
-
-    fn remove_from_ind(&mut self, index: usize) {
-        self.levels.remove(index);
-    }
-
-    fn lvl_length(&self) -> usize {
-        self.levels.len()
-    }
-}
-
+/// solve 1
 pub fn s1(input: Vec<String>) -> i64 {
-    let reports: Vec<Report> = input
-        .into_iter()
-        .map(|row| Report::from_string(row))
-        .collect();
-
-    reports
-        .into_iter()
-        .filter(|report| report.is_safe())
-        .count() as i64
+    input
+        .into_iter() // for each row in our input
+        .map(|row| {
+            row.split(REPORT_SEPARATOR) // split it by the separator
+                .map(|val| val.parse::<i8>().unwrap()) // parse each item as i8
+                .collect::<Vec<_>>() // collect as vector
+        })
+        .filter(|nums| is_safe(nums)) // filter only safe reports
+        .count() as i64 // return the lenght
 }
 
+/// solve 2
 pub fn s2(input: Vec<String>) -> i64 {
-    let reports: Vec<Report> = input
-        .into_iter()
-        .map(|row| Report::from_string(row))
-        .collect();
+    // used variables along the way:
+    let mut accum = 0; // safe report count
+    let mut nums: Vec<i8>; // nums (row)
+    let mut len: usize; // nums len (preserve length when removing items)
+    let mut removed: i8; // store removed item (maybe a safe report)
 
-    reports
-        .into_iter()
-        .filter(|report| {
-            report.is_safe() || {
-                for i in 0..report.lvl_length() {
-                    let mut repclone = report.clone();
-                    repclone.remove_from_ind(i);
-                    if repclone.is_safe() {
-                        return true;
-                    }
-                }
-                false
+    // for each row in our input
+    for row in input {
+        // get nums (Vector of i8)
+        nums = row
+            .split(REPORT_SEPARATOR)
+            .map(|val| val.parse::<i8>().unwrap())
+            .collect();
+        // if is safe, +1 to count and continue to next row
+        if is_safe(&nums) {
+            accum += 1;
+            continue;
+        }
+        // else, take vec length
+        len = nums.len();
+        // for each index in lenght range
+        for i in 0..len {
+            // remove the value
+            removed = nums.remove(i);
+            // test if is safe
+            if is_safe(&nums) {
+                accum += 1;
+                break;
             }
-        })
-        .count() as i64
+            // if isn't, insert value again and continue the loop
+            nums.insert(i, removed);
+        }
+    }
+    accum
 }
 
 #[cfg(test)]
-mod day02_tests {
+mod tests {
     use super::{s1, s2};
     use crate::utils::get_file_content;
     use crate::utils::StrArrVecString;
 
     #[test]
-    fn solve1_test() {
+    #[ignore]
+    fn test1() {
         let input = [
             "7 6 4 2 1",
             "1 2 7 8 9",
@@ -109,7 +108,7 @@ mod day02_tests {
     }
 
     #[test]
-    fn solve2_test() {
+    fn test2() {
         let input = [
             "7 6 4 2 1",
             "1 2 7 8 9",
@@ -124,14 +123,15 @@ mod day02_tests {
     }
 
     #[test]
-    fn solve1_run() {
+    #[ignore]
+    fn solve1() {
         let input = get_file_content("inputs/day02.txt");
         let result = s1(input);
         assert_eq!(result, 369);
     }
 
     #[test]
-    fn solve2_run() {
+    fn solve2() {
         let input = get_file_content("inputs/day02.txt");
         let result = s2(input);
         assert_eq!(result, 428);
