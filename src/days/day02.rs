@@ -1,139 +1,95 @@
-use std::ops::RangeInclusive;
-
-const SAFE_RANGE: RangeInclusive<i8> = 1..=3;
-const REPORT_SEPARATOR: &str = " ";
-
-/// Test if a i8 slice (reference) is a saffe report
+/// Function to test report levels safeness.
 fn is_safe(arr: &[i8]) -> bool {
-    // WARN:
-    // this function was clipboarded from reddit:
-    //    https://www.reddit.com/r/adventofcode/comments/1h4ncyr/2024_day_2_solutions/
-    // I'm sorry about this, but it have a good solve approach :^D
-    let (mut increasing, mut decreasing) = (true, true); // init with both inc. & dec. as true
-    let (mut prev, mut curr): (&i8, &i8); // holds previous value and current value in our slice
-
-    for i in 1..arr.len() {
-        (prev, curr) = (&arr[i - 1], &arr[i]);
-
-        if prev < curr {
-            // if previous is smaller, the values are increasing, so
-            decreasing = false;
-        } else if prev > curr {
-            // but if the previous is bigger...
-            increasing = false;
-        } else {
-            // else (are the same value -> invalid)
-            return false;
-        }
-        // test if abs diff is in safe range
-        if !SAFE_RANGE.contains(&(prev - curr).abs()) {
+    let (mut prev, mut curr, mut next): (i8, i8, i8);
+    for i in 1..(arr.len() - 1) {
+        prev = arr[i - 1];
+        curr = arr[i];
+        next = arr[i + 1];
+        if (curr <= prev && curr <= next)
+            || (curr >= prev && curr >= next)
+            || (prev - curr).abs() > 3
+            || (next - curr).abs() > 3
+        {
             return false;
         }
     }
-
-    increasing || decreasing
+    true
 }
 
-/// solve 1
-pub fn s1(input: Vec<String>) -> i64 {
+/// # Solve for challenge 1 at day 2:
+///
+/// We should turn each row of our input into a collection of ints (Vector),
+/// and then, count how many are safe.
+pub fn s1(input: &str) -> i64 {
     input
-        .into_iter() // for each row in our input
+        .lines()
         .map(|row| {
-            row.split(REPORT_SEPARATOR) // split it by the separator
-                .map(|val| val.parse::<i8>().unwrap()) // parse each item as i8
-                .collect::<Vec<_>>() // collect as vector
+            row.split(" ")
+                .map(|item| item.parse::<i8>().unwrap())
+                .collect::<Vec<i8>>()
         })
-        .filter(|nums| is_safe(nums)) // filter only safe reports
-        .count() as i64 // return the lenght
+        .filter(|report| is_safe(report))
+        .count() as i64
 }
 
-/// solve 2
-pub fn s2(input: Vec<String>) -> i64 {
-    // used variables along the way:
-    let mut accum = 0; // safe report count
-    let mut nums: Vec<i8>; // nums (row)
-    let mut len: usize; // nums len (preserve length when removing items)
-    let mut removed: i8; // store removed item (maybe a safe report)
-
-    // for each row in our input
-    for row in input {
-        // get nums (Vector of i8)
-        nums = row
-            .split(REPORT_SEPARATOR)
-            .map(|val| val.parse::<i8>().unwrap())
-            .collect();
-        // if is safe, +1 to count and continue to next row
-        if is_safe(&nums) {
-            accum += 1;
-            continue;
-        }
-        // else, take vec length
-        len = nums.len();
-        // for each index in lenght range
-        for i in 0..len {
-            // remove the value
-            removed = nums.remove(i);
-            // test if is safe
-            if is_safe(&nums) {
-                accum += 1;
-                break;
+/// # Solve for challenge 2 at day 2:
+///
+/// We should turn each row of our input ointo a collection of ints (Vector),
+/// and then, count how many are safe + how many can be safe by removing 1
+/// item.
+pub fn s2(input: &str) -> i64 {
+    input
+        .lines()
+        .map(|row| {
+            row.split(" ")
+                .map(|item| item.parse::<i8>().unwrap())
+                .collect::<Vec<i8>>()
+        })
+        .filter_map(|mut report| {
+            if is_safe(&report) {
+                return Some(report);
             }
-            // if isn't, insert value again and continue the loop
-            nums.insert(i, removed);
-        }
-    }
-    accum
+            let mut popped: i8;
+            for i in 0..report.len() {
+                popped = report.remove(i);
+                if is_safe(&report) {
+                    return Some(report);
+                }
+                report.insert(i, popped);
+            }
+            None
+        })
+        .count() as i64
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{s1, s2};
-    use crate::utils::get_file_content;
-    use crate::utils::StrArrVecString;
+
+    use super::*;
+
+    const INPUT: &str = include_str!("../../inputs/day02.txt");
+    const SAMPLE_1: &str = r#"7 6 4 2 1
+1 2 7 8 9
+9 7 6 2 1
+1 3 2 4 5
+8 6 4 4 1
+1 3 6 7 9"#;
+    const SAMPLE_2: &str = r#"7 6 4 2 1
+1 2 7 8 9
+9 7 6 2 1
+1 3 2 4 5
+8 6 4 4 1
+1 3 6 7 9"#;
 
     #[test]
-    #[ignore]
-    fn test1() {
-        let input = [
-            "7 6 4 2 1",
-            "1 2 7 8 9",
-            "9 7 6 2 1",
-            "1 3 2 4 5",
-            "8 6 4 4 1",
-            "1 3 6 7 9",
-        ]
-        .into_vecstring();
-        let result = s1(input);
-        assert_eq!(result, 2);
+    fn solve1_test() {
+        assert_eq!(s1(SAMPLE_1), 2);
+        assert_eq!(s1(INPUT), 369);
     }
 
     #[test]
-    fn test2() {
-        let input = [
-            "7 6 4 2 1",
-            "1 2 7 8 9",
-            "9 7 6 2 1",
-            "1 3 2 4 5",
-            "8 6 4 4 1",
-            "1 3 6 7 9",
-        ]
-        .into_vecstring();
-        let result = s2(input);
-        assert_eq!(result, 4);
-    }
-
-    #[test]
-    #[ignore]
-    fn solve1() {
-        let input = get_file_content("inputs/day02.txt");
-        let result = s1(input);
-        assert_eq!(result, 369);
-    }
-
-    #[test]
-    fn solve2() {
-        let input = get_file_content("inputs/day02.txt");
-        let result = s2(input);
-        assert_eq!(result, 428);
+    fn solve2_test() {
+        assert_eq!(s2(SAMPLE_2), 4);
+        assert_eq!(s2(INPUT), 428);
     }
 }
