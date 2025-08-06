@@ -1,136 +1,123 @@
 use regex::Regex;
 
-const ONLY_MULS_REGEX: &str = r"mul\([0-9]+,[0-9]+\)";
-const MULS_DO_DONTS_REGEX: &str = r"do\(\)|mul\([0-9]+,[0-9]+\)|don't\(\)";
-const NUM_REGEX: &str = r"[0-9]+";
-
-struct PatternStruct {
-    self_value: String,
+/// Accumulator helper.
+///
+/// It will take a `mul(<integer>,<integer>)` sentence and evaluate the result.
+/// Then, add it to an accumulator field.
+///
+/// It also have turn off / turn on features (required to part 2 solve).
+struct MulAccumulator {
+    accumulator: i64,
+    add_mul: bool,
+    num_regex: Regex,
 }
 
-impl PatternStruct {
-    fn from_str<'a>(input: &'a str) -> Self {
+impl MulAccumulator {
+    fn new() -> Self {
         Self {
-            self_value: input.to_string(),
+            accumulator: 0,
+            add_mul: true,
+            num_regex: Regex::new(r"[0-9]+").unwrap(),
         }
     }
 
-    fn is_do(&self) -> bool {
-        self.self_value == "do()"
+    /// Turn off / on the counter increment.
+    fn set_add_mul(&mut self, new_value: bool) {
+        self.add_mul = new_value;
     }
 
-    fn is_dont(&self) -> bool {
-        self.self_value == "don't()"
-    }
-
-    fn get_mul_value(&self) -> i64 {
-        if self.is_do() || self.is_dont() {
-            0
-        } else {
-            self.find_self_values().into_iter().product()
+    /// Evaluate and increment the evaluated `mul` sentence (ONLY IF increment
+    /// is turned on).
+    fn increment_with_mul(&mut self, mul: &str) {
+        if !self.add_mul {
+            return;
         }
-    }
-
-    fn find_self_values(&self) -> Vec<i64> {
-        let num_finder = Regex::new(NUM_REGEX).unwrap();
-
-        num_finder
-            .find_iter(&self.self_value)
-            .map(|val| val.as_str().parse().unwrap())
-            .collect()
+        self.accumulator += self
+            .num_regex
+            .find_iter(mul)
+            .map(|val| val.as_str().parse::<i64>().unwrap())
+            .product::<i64>();
     }
 }
 
-trait PatternStructEval {
-    fn evaluate_from_vec(&self, dont_flag: &mut bool) -> i64;
+/// # Solve for challenge 1 at day 3:
+///
+/// We should iter through a bunch of rows and found all
+/// `mul(<integer>,<integer>)` occurences. To do so, we can use regex matching
+/// with the Regex crate.
+///
+/// Then, we need to:
+///
+/// - create an accumulator
+/// - for all `row`s:
+///     - for all `mul`s in this row:
+///         - multiple the inner integers
+///         - add the result to the accumulator
+/// - return the accumulator
+pub fn s1(input: &str) -> i64 {
+    let mul_pattern = Regex::new(r"mul\([0-9]+,[0-9]+\)").unwrap();
+    input
+        .lines()
+        .map(|row| mul_pattern.find_iter(row).map(|mtc| mtc.as_str()))
+        .fold(MulAccumulator::new(), |mut mulacc, muls| {
+            muls.for_each(|m| mulacc.increment_with_mul(m));
+            mulacc
+        })
+        .accumulator
 }
 
-impl PatternStructEval for Vec<PatternStruct> {
-    fn evaluate_from_vec(&self, dont_flag: &mut bool) -> i64 {
-        let mut accum = 0;
-
-        for pattern in self {
-            if pattern.is_dont() {
-                *dont_flag = true;
-                continue;
-            }
-            if pattern.is_do() {
-                *dont_flag = false;
-                continue;
-            }
-            if *dont_flag {
-                continue;
-            }
-            accum += pattern.get_mul_value();
-        }
-        accum
-    }
-}
-
-pub fn s1(input: Vec<String>) -> i64 {
-    let mul_pattern = Regex::new(ONLY_MULS_REGEX).unwrap();
-    let mut accum: i64 = 0;
-
-    for row in input.iter() {
-        let vec_muls: Vec<PatternStruct> = mul_pattern
-            .find_iter(row)
-            .map(|m| PatternStruct::from_str(m.as_str()))
-            .collect();
-
-        accum += vec_muls.evaluate_from_vec(&mut false);
-    }
-    accum
-}
-
-pub fn s2(input: Vec<String>) -> i64 {
-    let pattern = Regex::new(MULS_DO_DONTS_REGEX).unwrap();
-    let mut dont_flag = false;
-    let mut accum = 0;
-
-    for row in input.iter() {
-        let pattern_vec: Vec<PatternStruct> = pattern
-            .find_iter(row)
-            .map(|p| PatternStruct::from_str(p.as_str()))
-            .collect();
-        accum += pattern_vec.evaluate_from_vec(&mut dont_flag)
-    }
-
-    accum
+/// # Solve for challenge 1 at day 3:
+///
+/// We should iter through a bunch of rows and found all `do()`,
+/// `mul(<integer>,<integer>)` and `don't()` occurences. To do so, we can use
+/// regex matching with the Regex crate.
+///
+/// Then, we need to:
+///
+/// - create an accumulator (with turn on/turn off features)
+/// - for all `row`s:
+///     - for all <TARGET OCCURENCE>s in this row:
+///         - if it's `don't()`, turn off the increment accumulator
+///         - if it's `do()`, turn on the increment accumulator
+///         - if it's `mul(<integer>,<integer>)` and increment is enabled
+///             - multiple the inner integers
+///             - add the result to the accumulator
+/// - return the accumulator
+pub fn s2(input: &str) -> i64 {
+    let mul_pattern = Regex::new(r"do\(\)|mul\([0-9]+,[0-9]+\)|don't\(\)").unwrap();
+    input
+        .lines()
+        .map(|row| mul_pattern.find_iter(row).map(|mtc| mtc.as_str()))
+        .fold(MulAccumulator::new(), |mut mulacc, muls| {
+            muls.for_each(|m| match m {
+                "don't()" => mulacc.set_add_mul(false),
+                "do()" => mulacc.set_add_mul(true),
+                x => mulacc.increment_with_mul(x),
+            });
+            mulacc
+        })
+        .accumulator
 }
 
 #[cfg(test)]
-mod day03_tests {
-    use super::{s1, s2};
-    use crate::utils::get_file_content;
-    use crate::utils::StrArrVecString;
+mod tests {
+    use super::*;
+
+    const INPUT: &str = include_str!("../../inputs/day03.txt");
+    const SAMPLE_1: &str =
+        "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))";
+    const SAMPLE_2: &str =
+        "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))";
 
     #[test]
     fn solve1_test() {
-        let input = ["xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"]
-            .into_vecstring();
-        let result = s1(input);
-        assert_eq!(result, 161);
+        assert_eq!(s1(SAMPLE_1), 161);
+        assert_eq!(s1(INPUT), 184511516)
     }
 
     #[test]
     fn solve2_test() {
-        let input = ["xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"]
-            .into_vecstring();
-        let result = s2(input);
-        assert_eq!(result, 48);
-    }
-
-    #[test]
-    fn solve1_run() {
-        let input = get_file_content("inputs/day03.txt");
-        let result = s1(input);
-        assert_eq!(result, 184511516);
-    }
-
-    #[test]
-    fn solve2_run() {
-        let input = get_file_content("inputs/day03.txt");
-        let result = s2(input);
-        assert_eq!(result, 90044227);
+        assert_eq!(s2(SAMPLE_2), 48);
+        assert_eq!(s2(INPUT), 90044227);
     }
 }
