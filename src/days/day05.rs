@@ -1,404 +1,235 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-// consts used along the solves
-const PAGE_ORDERING_RULES_SEPARATOR: &str = "|"; // ex: "1|2", "32|27", ...
-const PAGE_NUMBERS_SEPARATOR: &str = ","; // ex: "1,2,3,4", "31,27,90", ...
-
-/* sections separator (I've changed the empty line from the original input to '#' 'cause we're
- * removing empty lines when converting the &str input to Vec<String>
- */
-const SECTION_SEPARATOR_BEGIN: &str = "#";
-
-/// Function to get usize index when separating input sections.
-///
-/// # Example
-///
-/// Consider our input as:
-///
-/// ```
-/// let input = Vec::from([
-/// "12|32",    // ind: 0
-/// "13|12",    // ind: 1
-/// "#",        // ind: 2 (section separator here)
-/// "12,32,13", // ind: 3
-/// "13,12,32", // ind: 4
-/// ]);
-/// ```
-///
-/// Then:
-///
-/// ```
-/// let index = get_section_separator(&input); // expecting 2
-/// ```
-///
-/// # Panics
-///
-/// If the section separator ('#' const) isn't present on the input. (Check line 29 of this file)
-fn get_section_separator(vector: &[String]) -> usize {
-    vector.iter()
-        .position(|row| row.starts_with(SECTION_SEPARATOR_BEGIN))
-        .unwrap_or_else(|| {
-            panic!("Missing '{}' to get section separator. Probably an copy-pasted input!\nTake a look at 'src/days/day05.rs' comments", SECTION_SEPARATOR_BEGIN);
-        }
-        )
+/// A Helper struct to handle page ordering. It should be ran with HashMap.
+struct PageOrdering<'a> {
+    lefts: HashSet<&'a str>,
+    rights: HashSet<&'a str>,
 }
 
-/// Create a Pages Helper trait since PageHelper isn't a struct, but type alias instead. The
-/// declared lifetime is also required since we are working with `&str`.
-trait PagesHelperTrait<'a> {
-    fn run_rule_entry(&mut self, rule: Rule<'a>);
-    fn is_safe_page_numbers(&self, page_numbers: &mut Vec<&str>) -> bool;
-    fn fixed_list_from(&self, pages: Vec<&'a str>) -> Vec<&'a str>;
-    fn get_insert_index(&self, vector: &[&str], value: &str) -> usize;
-}
-
-/// Rule for each rule input.
-///
-/// # Example
-///
-/// - the "1|2" input means a `Rule { left: "1", right: "2"}`
-struct Rule<'a> {
-    left: &'a str,
-    right: &'a str,
-}
-
-impl<'a> From<&'a String> for Rule<'a> {
-    /// Convert a `&'a String` input to a Rule:
-    ///
-    /// # How it works
-    ///
-    /// - take the `&String`
-    /// - split it by the `PAGE_ORDERING_RULES_SEPARATOR`
-    /// - send next value (left) from the splitted iter to left field
-    /// - send next value again (right) from the splitted iter to right field
-    fn from(value: &'a String) -> Self {
-        let mut values = value.split(PAGE_ORDERING_RULES_SEPARATOR);
+impl<'a> PageOrdering<'a> {
+    /// Initialize page ordering with an element at left.
+    fn with_left(page: &'a str) -> Self {
         Self {
-            left: values.next().unwrap(),
-            right: values.next().unwrap(),
+            lefts: HashSet::from([page]),
+            rights: HashSet::new(),
         }
     }
-}
 
-/// Key type for our `PagesHelper` since we need to store a HashMap<K, V>, where
-/// V is a struct containing all pages that should be at left + all pages that
-/// should be at right (pages: `&str`).
-struct OrderingRules<'a> {
-    at_left: HashSet<&'a str>,
-    at_right: HashSet<&'a str>,
-}
-
-impl<'a> OrderingRules<'a> {
-    /// Init a new `OrderingRules` with a default left page + empty Set at right.
-    fn left_init(init_val: &'a str) -> Self {
+    /// Initialize page ordering with an element at right.
+    fn with_right(page: &'a str) -> Self {
         Self {
-            at_left: HashSet::from([init_val]),
-            at_right: HashSet::new(),
+            lefts: HashSet::new(),
+            rights: HashSet::from([page]),
         }
     }
 
-    /// Init a new `OrderingRules` with a default right page + empty Set at left.
-    fn right_init(init_val: &'a str) -> Self {
-        Self {
-            at_left: HashSet::new(),
-            at_right: HashSet::from([init_val]),
-        }
+    fn insert_left(&mut self, page: &'a str) {
+        self.lefts.insert(page);
     }
 
-    /// Check if this `OrderingRules` contains a given page at left.
-    fn left_contains(&self, value: &str) -> bool {
-        self.at_left.contains(&value)
+    fn insert_right(&mut self, page: &'a str) {
+        self.rights.insert(page);
     }
 
-    /// Check if this `OrderingRules` contains a given page at right.
-    fn right_contains(&self, value: &str) -> bool {
-        self.at_right.contains(&value)
+    /// Check if a given value is contained at left set.
+    fn contains_at_left(&self, value: &'a str) -> bool {
+        self.lefts.contains(value)
     }
 
-    /// Push a new value to the left set-list.
-    fn push_left(&mut self, value: &'a str) {
-        self.at_left.insert(value);
-    }
-
-    /// Push a new value to the right set-list.
-    fn push_right(&mut self, value: &'a str) {
-        self.at_right.insert(value);
+    /// Check if a given value is contained at right set.
+    fn contains_at_right(&self, value: &'a str) -> bool {
+        self.rights.contains(value)
     }
 }
 
-/// Type alias for our `PagesHelper`. It's a HashMap<K, V> where:
-/// - `K` is a page page (`&str`)
-/// - `V` is a OrderingRules containing all left/right pages
-type PagesHelper<'a> = HashMap<&'a str, OrderingRules<'a>>;
+/// Usefull traits to handle PageOrdering within a HashMap.
+trait PageAnalysis<'a> {
+    /// Check if a given vector reference (array slice) is correctly ordered.
+    fn is_correctly_ordered(&self, pages: &[&'a str]) -> bool;
+    /// Convert an incorrectly ordered Vector into a correct one (based on the
+    /// `&self` object).
+    fn fix_order(&self, pages: Vec<&'a str>) -> Vec<&'a str>;
+}
 
-impl<'a> PagesHelperTrait<'a> for PagesHelper<'a> {
-    /// Do all entry process for a given page
-    ///
-    /// # Example
-    ///
-    /// It will take a Rule type param, handle both left and right values to prepare entry:
-    /// - check the current entry (both left and right)
-    /// - if if already exists in HashMap: push the other value to their respective place (left or
-    ///   right)
-    /// - else insert the entry with with respective place init (left or right)
-    fn run_rule_entry(&mut self, rule: Rule<'a>) {
-        let (left, right) = (rule.left, rule.right);
-        self.entry(left)
-            .and_modify(|val| val.push_right(right))
-            .or_insert(OrderingRules::right_init(right));
-        self.entry(right)
-            .and_modify(|val| val.push_left(left))
-            .or_insert(OrderingRules::left_init(left));
+impl<'a> PageAnalysis<'a> for HashMap<&'a str, PageOrdering<'a>> {
+    fn is_correctly_ordered(&self, pages: &[&'a str]) -> bool {
+        (0..pages.len()).all(|i| {
+            let lefts = &pages[0..i];
+            let rights = &pages[(i + 1)..];
+            let mid = &pages[i];
+            !(lefts.iter().any(|l| {
+                self.get(mid)
+                    .map(|ord| ord.contains_at_right(l))
+                    .unwrap_or(false)
+            }) || rights.iter().any(|r| {
+                self.get(mid)
+                    .map(|ord| ord.contains_at_left(r))
+                    .unwrap_or(false)
+            }))
+        })
     }
-
-    /// Test if a given page Vector is valid.
-    ///
-    /// # Note I
-    ///
-    /// Since we need to check each page in our page number list, the vector should be a mutable
-    /// reference to:
-    /// - remove item
-    /// - check the item safeness
-    /// - re-insert the item
-    ///
-    /// # How it works
-    ///
-    /// It'll iterate over the `page_numbers` *index* range. In each iter, a page of the given
-    /// index will be removed, then, a `OrderingRules` reference targeting the current page will be
-    /// handled.
-    ///
-    /// Considering each page at left as `p`, if it's `p` contained in right list, the function
-    /// will return false. (Same logic to each page a right)
-    ///
-    /// # Note II
-    ///
-    /// Since only **INVALID** page_numbers should be handled at part2 of this solve, the remove
-    /// page should be re-inserted, even the function returns false.
-    fn is_safe_page_numbers(&self, page_numbers: &mut Vec<&str>) -> bool {
-        let mut current_page: &str;
-        let mut ord_rul_ref: &OrderingRules;
-        let mut lefts: &[&str];
-        let mut rights: &[&str];
-        for i in 0..page_numbers.len() {
-            current_page = page_numbers.remove(i);
-            match self.get(current_page) {
-                Some(v) => ord_rul_ref = v,
-                _ => {
-                    // if there's no ordering rule for this page
-                    page_numbers.insert(i, current_page);
-                    continue;
-                }
-            }
-            lefts = &page_numbers[..i];
-            rights = &page_numbers[i..];
-
-            if lefts.iter().any(|val| ord_rul_ref.right_contains(val)) {
-                page_numbers.insert(i, current_page);
-                return false;
-            }
-            if rights.iter().any(|val| ord_rul_ref.left_contains(val)) {
-                page_numbers.insert(i, current_page);
-                return false;
-            }
-            page_numbers.insert(i, current_page);
-        }
-        true
-    }
-
-    /// Build a fixed list of page numbers.
-    ///
-    /// # How it works
-    ///
-    /// - generate a new empty Vector
-    /// - for each page in the old vector:
-    ///     - get the correct index based on the actual result populated vector + the current page
-    ///       (see `get_insert_index` function)
-    ///     - insert the page in their respective index
-    /// - return the new vector
-    fn fixed_list_from(&self, pages: Vec<&'a str>) -> Vec<&'a str> {
+    fn fix_order(&self, pages: Vec<&'a str>) -> Vec<&'a str> {
         let mut result = Vec::with_capacity(pages.len());
-        let mut ind: usize;
-        for pg in pages.into_iter() {
-            ind = self.get_insert_index(&result, pg);
-            result.insert(ind, pg);
-        }
+        pages.into_iter().for_each(|page| {
+            let mut ind = result.len();
+            while ind > 0 {
+                if self
+                    .get(&page)
+                    .map(|ord| {
+                        ord.contains_at_left(result[ind - 1])
+                            || !ord.contains_at_right(result[ind - 1])
+                    })
+                    .unwrap_or(false)
+                {
+                    break;
+                }
+                ind -= 1;
+            }
+            result.insert(ind, page);
+        });
         result
     }
-
-    /// Function to get the correct insertion index of a given page based on the self PagesHelper +
-    /// a given vector (as slice)
-    fn get_insert_index(&self, vector: &[&str], value: &str) -> usize {
-        // start cur index as vector length (compare from right to left)
-        let mut cur = vector.len();
-        // WARN: all the code above is dangerous. The `get` function can return a None value. In
-        // this case, we should compare a `get` option by the pages in the slice, not the value
-        // itself. Anyway, this code works, so... there's my solve solution ¯\_('-')_/¯
-        let helper = self.get(value).unwrap();
-        while cur > 0 {
-            if helper.left_contains(vector[cur - 1]) {
-                break;
-            }
-            cur -= 1;
-        }
-        cur
-    }
 }
 
-/// Solve 1
-pub fn s1(input: Vec<String>) -> i64 {
-    // get section separator index
-    let section_sep_ind = get_section_separator(&input);
-    // pages helper is
-    let pages_helper = input // our input, but...
-        .iter()
-        .take(section_sep_ind) // for each row until sep. index
-        .map(Rule::from) // map it to a Rule struct, then
-        .fold(PagesHelper::new(), |mut init, rule| {
-            // fold it into a new PagesHelper (HashMap)
-            // type
-            init.run_rule_entry(rule);
-            init
-        });
-
-    // for each row of our input
+/// # Solve for challenge 1 at day 5:
+///
+/// We should separate our input in two parts (1: the page ordering rules, 2:
+/// the update sections).
+///
+/// Then, we'll create a HashMap of `<A: &str, B: PageOrdering<&str>>` which `A`
+/// means a single page, and `B` stores it's pages at left and right. Split
+/// each first section row into small data pieces and place it in our HashMap
+/// accordingly to the previous explanation. Finally, we'll split the second
+/// section into rows, and each row into page data, then, filter only the valid
+/// page updates and sum the mid page of it.
+pub fn s1(input: &str) -> i64 {
+    let empty_idx = input
+        .split("\n")
+        .position(|row| row.is_empty())
+        .expect("Missing empty line");
+    let page_ord = input.split("\n").take(empty_idx).fold(
+        HashMap::<&str, PageOrdering>::new(),
+        |mut hmap, row| {
+            let (left, right) = {
+                let mut pages = row.split("|");
+                let mut next = || pages.next().unwrap();
+                (next(), next())
+            };
+            hmap.entry(left)
+                .and_modify(|po| po.insert_right(right))
+                .or_insert(PageOrdering::with_right(right));
+            hmap.entry(right)
+                .and_modify(|po| po.insert_left(left))
+                .or_insert(PageOrdering::with_left(left));
+            hmap
+        },
+    );
     input
-        .iter()
-        .skip(section_sep_ind + 1) // (from sep. index ahead)
+        .split("\n")
+        .skip(empty_idx + 1)
+        .filter(|row| !row.is_empty())
         .filter_map(|row| {
-            // take only the safe pages list (as vector)
-            let mut pages = row.split(PAGE_NUMBERS_SEPARATOR).collect();
-            if pages_helper.is_safe_page_numbers(&mut pages) {
+            let pages: Vec<&str> = row.split(",").collect();
+            if page_ord.is_correctly_ordered(&pages) {
                 Some(pages)
             } else {
                 None
             }
-        }) // for each page, take the middle element (&str) and convert it to i64
-        .map(|pages| pages[pages.len() / 2].parse::<i64>().unwrap())
-        .sum() // then, return the sum
+        })
+        .fold(0, |accum, pages| {
+            accum + pages[pages.len() / 2].parse::<i64>().unwrap()
+        })
 }
 
-/// solve2
-pub fn s2(input: Vec<String>) -> i64 {
-    // same as above
-    let section_sep_ind = get_section_separator(&input);
-    let pages_helper = input.iter().take(section_sep_ind).map(Rule::from).fold(
-        PagesHelper::new(),
-        |mut init, rule| {
-            init.run_rule_entry(rule);
-            init
+/// # Solve for challenge 2 at day 5:
+///
+/// Works the same as solve 1, but we'll filter only the **INVALID** page
+/// updates, fix them and sum the mid page to get our final result.
+pub fn s2(input: &str) -> i64 {
+    let empty_idx = input
+        .split("\n")
+        .position(|row| row.is_empty())
+        .expect("Missing empty line");
+    let page_ord = input.split("\n").take(empty_idx).fold(
+        HashMap::<&str, PageOrdering>::new(),
+        |mut hmap, row| {
+            let (left, right) = {
+                let mut pages = row.split("|");
+                let mut next = || pages.next().unwrap();
+                (next(), next())
+            };
+            hmap.entry(left)
+                .and_modify(|po| po.insert_right(right))
+                .or_insert(PageOrdering::with_right(right));
+            hmap.entry(right)
+                .and_modify(|po| po.insert_left(left))
+                .or_insert(PageOrdering::with_left(left));
+            hmap
         },
     );
-
-    // same as solve1
     input
-        .iter()
-        .skip(section_sep_ind + 1)
+        .split("\n")
+        .skip(empty_idx + 1)
+        .filter(|row| !row.is_empty())
         .filter_map(|row| {
-            // but now, we'll filter only the invalid pages
-            let mut pages = row.split(PAGE_NUMBERS_SEPARATOR).collect();
-            if pages_helper.is_safe_page_numbers(&mut pages) {
-                None
+            let pages: Vec<_> = row.split(",").collect();
+            if !page_ord.is_correctly_ordered(&pages) {
+                Some(pages)
             } else {
-                // and return the fixed version of it
-                Some(pages_helper.fixed_list_from(pages))
+                None
             }
-        }) // now, do the middle parse thing
-        .map(|pages_list| pages_list[pages_list.len() / 2].parse::<i64>().unwrap())
-        .sum() // and sum
+        })
+        .map(|pages| page_ord.fix_order(pages))
+        .fold(0, |accum, pages| {
+            accum + pages[pages.len() / 2].parse::<i64>().unwrap()
+        })
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{s1, s2};
-    use crate::utils::get_file_content;
-    use crate::utils::StrArrVecString;
+
+    use super::*;
+
+    const INPUT: &str = include_str!("../../inputs/day05.txt");
+    const SAMPLE_1: &str = r#"47|53
+97|13
+97|61
+97|47
+75|29
+61|13
+75|53
+29|13
+97|29
+53|29
+61|53
+97|53
+61|29
+47|13
+75|47
+97|75
+47|61
+75|61
+47|29
+75|13
+53|13
+
+75,47,61,53,29
+97,61,53,29,13
+75,29,13
+75,97,47,61,53
+61,13,29
+97,13,75,29,47"#;
 
     #[test]
-    fn test1() {
-        let input = [
-            "47|53",
-            "97|13",
-            "97|61",
-            "97|47",
-            "75|29",
-            "61|13",
-            "75|53",
-            "29|13",
-            "97|29",
-            "53|29",
-            "61|53",
-            "97|53",
-            "61|29",
-            "47|13",
-            "75|47",
-            "97|75",
-            "47|61",
-            "75|61",
-            "47|29",
-            "75|13",
-            "53|13",
-            "#",
-            "75,47,61,53,29",
-            "97,61,53,29,13",
-            "75,29,13",
-            "75,97,47,61,53",
-            "61,13,29",
-            "97,13,75,29,47",
-        ]
-        .into_vecstring();
-        let result = s1(input);
-        assert_eq!(result, 143);
+    fn solve1_test() {
+        assert_eq!(s1(SAMPLE_1), 143);
+        assert_eq!(s1(INPUT), 5329);
     }
 
     #[test]
-    fn test2() {
-        let input = [
-            "47|53",
-            "97|13",
-            "97|61",
-            "97|47",
-            "75|29",
-            "61|13",
-            "75|53",
-            "29|13",
-            "97|29",
-            "53|29",
-            "61|53",
-            "97|53",
-            "61|29",
-            "47|13",
-            "75|47",
-            "97|75",
-            "47|61",
-            "75|61",
-            "47|29",
-            "75|13",
-            "53|13",
-            "#",
-            "75,47,61,53,29",
-            "97,61,53,29,13",
-            "75,29,13",
-            "75,97,47,61,53",
-            "61,13,29",
-            "97,13,75,29,47",
-        ]
-        .into_vecstring();
-        let result = s2(input);
-        assert_eq!(result, 123);
-    }
-
-    #[test]
-    fn run1() {
-        let input = get_file_content("inputs/day05.txt");
-        let result = s1(input);
-        assert_eq!(result, 5329);
-    }
-
-    #[test]
-    fn run2() {
-        let input = get_file_content("inputs/day05.txt");
-        let result = s2(input);
-        assert_eq!(result, 5833);
+    fn solve2_test() {
+        assert_eq!(s2(SAMPLE_1), 123);
+        assert_eq!(s2(INPUT), 5833);
     }
 }
