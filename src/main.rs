@@ -1,11 +1,7 @@
 mod days;
 mod utils;
 
-use days::{
-    day01 as d01, day02 as d02, day03 as d03, day04 as d04, day05 as d05, day06 as d06,
-    day07 as d07,
-};
-use std::path::PathBuf;
+use days::SOLVES;
 use utils::InputFile;
 
 /// Exit the program with an error code (`1`).
@@ -14,18 +10,7 @@ fn error_exit() -> ! {
     std::process::exit(1)
 }
 
-type DayPair = (Option<fn(String) -> usize>, Option<fn(String) -> usize>);
-
 fn main() {
-    let solves: [DayPair; 1] = [
-        (Some(d01::s1), Some(d01::s1)),
-        //(Some(d02::s1), Some(d02::s2)),
-        //(Some(d03::s1), Some(d03::s2)),
-        //(Some(d04::s1), Some(d04::s2)),
-        //(Some(d05::s1), Some(d05::s2)),
-        //(Some(d06::s1), Some(d06::s2)),
-        //(Some(d07::s1), Some(d07::s2)),
-    ];
     let target_day: u8;
     let mut args = std::env::args().skip(1);
     match args.next() {
@@ -52,7 +37,7 @@ fn main() {
             error_exit();
         }
     }
-    let ifl = match InputFile::try_from((PathBuf::from("inputs"), target_day)) {
+    let ifl = match InputFile::try_from(("inputs", target_day)) {
         Ok(x) => x,
         Err(e) => {
             println!(
@@ -62,13 +47,25 @@ fn main() {
             error_exit();
         }
     };
-    match solves.get(target_day as usize - 1) {
+    match SOLVES.get(target_day as usize - 1) {
         Some(pair) => {
             println!("Solves for the \x1b[96mday {:02}\x1b[0m:", target_day);
+            println!(
+                "  \x1b[92mpart 1\x1b[0m: {}",
+                pair.0
+                    .map(|f| f(ifl.content.clone()).to_string())
+                    .unwrap_or("not implemented yet".into())
+            );
+            println!(
+                "  \x1b[92mpart 2\x1b[0m: {}",
+                pair.1
+                    .map(|f| f(ifl.content).to_string())
+                    .unwrap_or("not implemented yet".into())
+            );
         }
         None => {
             println!(
-                "Solves for the \x1b[96mday {:02}\x1b[0m wasn't implemented yet.",
+                "Solves for the \x1b[96mday {:02}\x1b[0m \x1b[91mwasn't implemented yet\x1b[0m.",
                 target_day
             );
         }
