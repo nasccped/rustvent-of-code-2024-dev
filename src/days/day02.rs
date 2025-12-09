@@ -1,95 +1,101 @@
-/// Function to test report levels safeness.
-fn is_safe(arr: &[i8]) -> bool {
-    let (mut prev, mut curr, mut next): (i8, i8, i8);
-    for i in 1..(arr.len() - 1) {
-        prev = arr[i - 1];
-        curr = arr[i];
-        next = arr[i + 1];
-        if (curr <= prev && curr <= next)
-            || (curr >= prev && curr >= next)
-            || (prev - curr).abs() > 3
-            || (next - curr).abs() > 3
-        {
-            return false;
-        }
+trait ReportTrait {
+    fn report_from_str(s: &str) -> Self;
+    fn is_safe(&self) -> bool;
+}
+
+impl ReportTrait for Vec<i8> {
+    fn report_from_str(s: &str) -> Self {
+        s.split_whitespace()
+            .map(|level| level.parse::<i8>().unwrap())
+            .collect()
     }
-    true
-}
 
-/// # Solve for challenge 1 at day 2:
-///
-/// We should turn each row of our input into a collection of ints (Vector),
-/// and then, count how many are safe.
-pub fn s1(input: &str) -> i64 {
-    input
-        .lines()
-        .map(|row| {
-            row.split(" ")
-                .map(|item| item.parse::<i8>().unwrap())
-                .collect::<Vec<i8>>()
-        })
-        .filter(|report| is_safe(report))
-        .count() as i64
-}
-
-/// # Solve for challenge 2 at day 2:
-///
-/// We should turn each row of our input ointo a collection of ints (Vector),
-/// and then, count how many are safe + how many can be safe by removing 1
-/// item.
-pub fn s2(input: &str) -> i64 {
-    input
-        .lines()
-        .map(|row| {
-            row.split(" ")
-                .map(|item| item.parse::<i8>().unwrap())
-                .collect::<Vec<i8>>()
-        })
-        .filter_map(|mut report| {
-            if is_safe(&report) {
-                return Some(report);
+    fn is_safe(&self) -> bool {
+        let (mut ascending, mut descending) = (false, false);
+        for i in 1..self.len() {
+            let (prev, curr) = (self[i - 1], self[i]);
+            let diff = (prev - curr).abs();
+            if diff <= 0 || diff > 3 {
+                return false;
             }
-            let mut popped: i8;
-            for i in 0..report.len() {
-                popped = report.remove(i);
-                if is_safe(&report) {
-                    return Some(report);
+            if prev < curr {
+                ascending = true
+            } else {
+                descending = true
+            }
+        }
+        ascending ^ descending
+    }
+}
+
+pub fn s1(input: String) -> usize {
+    let reports = input.lines().fold(Vec::new(), |mut v: Vec<Vec<i8>>, row| {
+        v.push(Vec::report_from_str(row));
+        v
+    });
+    reports.into_iter().filter(|lvls| lvls.is_safe()).count()
+}
+
+pub fn s2(input: String) -> usize {
+    let mut reports = input.lines().fold(Vec::new(), |mut v: Vec<Vec<i8>>, row| {
+        v.push(Vec::report_from_str(row));
+        v
+    });
+    let mut safes = reports.len();
+    reports.retain(|r| !r.is_safe());
+    safes -= reports.len();
+    let fixes = reports
+        .into_iter()
+        .filter_map(|mut r| {
+            for i in 0..r.len() {
+                let curr = r.remove(i);
+                if r.is_safe() {
+                    return Some(r);
                 }
-                report.insert(i, popped);
+                r.insert(i, curr);
             }
             None
         })
-        .count() as i64
+        .count();
+    safes + fixes
 }
 
 #[cfg(test)]
 mod tests {
 
     use super::*;
+    use crate::utils::InputFile;
 
-    const INPUT: &str = include_str!("../../inputs/day02.txt");
-    const SAMPLE_1: &str = r#"7 6 4 2 1
+    const INPUT: &str = "7 6 4 2 1
 1 2 7 8 9
 9 7 6 2 1
 1 3 2 4 5
 8 6 4 4 1
-1 3 6 7 9"#;
-    const SAMPLE_2: &str = r#"7 6 4 2 1
-1 2 7 8 9
-9 7 6 2 1
-1 3 2 4 5
-8 6 4 4 1
-1 3 6 7 9"#;
+1 3 6 7 9";
 
     #[test]
     fn solve1_test() {
-        assert_eq!(s1(SAMPLE_1), 2);
-        assert_eq!(s1(INPUT), 369);
+        let result = s1(INPUT.into());
+        assert_eq!(result, 2);
     }
 
     #[test]
     fn solve2_test() {
-        assert_eq!(s2(SAMPLE_2), 4);
-        assert_eq!(s2(INPUT), 428);
+        let result = s2(INPUT.into());
+        assert_eq!(result, 4);
+    }
+
+    #[test]
+    fn solve1_run() {
+        let input = InputFile::try_from(("inputs", 2)).unwrap();
+        let result = s1(input.content);
+        assert_eq!(result, 369);
+    }
+
+    #[test]
+    fn solve2_run() {
+        let input = InputFile::try_from(("inputs", 2)).unwrap();
+        let result = s2(input.content);
+        assert_eq!(result, 428);
     }
 }
