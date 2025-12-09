@@ -1,72 +1,62 @@
 mod days;
-mod utils;
+mod err_report;
+mod inputs;
 
 use days::SOLVES;
-use utils::InputFile;
+use err_report::ErrReport;
+use inputs::INPUTS;
 
-/// Exit the program with an error code (`1`).
-fn error_exit() -> ! {
-    println!("Aborting...");
-    std::process::exit(1)
+fn print_err_and_exit(message: impl Into<ErrReport>) -> ! {
+    let e = message.into();
+    e.print_and_exit()
 }
 
+const USAGE_TIP: &str = "Usage tip: `\x1b[92mcargo run -- \x1b[96m<DAY_NUMBER>\x1b[0m`";
+
 fn main() {
-    let target_day: u8;
+    let target_day: usize;
     let mut args = std::env::args().skip(1);
     match args.next() {
-        None => {
-            println!("\x1b[91merror:\x1b[0m no day number provided.");
-            error_exit();
-        }
-        Some(x) if args.len() == 0 => match x.parse::<u8>() {
-            Err(_) => {
-                println!(
-                    "\x1b[91merror:\x1b[0m `\x1b[96m{}\x1b[0m` isn't a valid day number.",
-                    x
-                );
-                error_exit();
-            }
-            Ok(0) => {
-                println!("\x1b[91merror:\x1b[0m day `0` isn't allowed.");
-                error_exit();
-            }
+        None => print_err_and_exit(("no day number provided", USAGE_TIP)),
+        Some(x) if args.len() == 0 => match x.parse::<usize>() {
+            Err(_) => print_err_and_exit((format!("`{}` isn't a valid day number", x), USAGE_TIP)),
+            Ok(0) => print_err_and_exit("day `0` isn't allowed"),
             Ok(d) => target_day = d,
         },
         Some(_) => {
-            println!("\x1b[91merror:\x1b[0m passing more than 1 arg isn't valid.",);
-            error_exit();
+            print_err_and_exit((
+                format!("invalid amount of args (`{}`)", args.len() + 1),
+                USAGE_TIP,
+            ));
         }
     }
-    let ifl = match InputFile::try_from(("inputs", target_day)) {
-        Ok(x) => x,
-        Err(e) => {
-            println!(
-                "\x1b[91merror:\x1b[0m couldn't open the file ({})",
-                e.0.display()
-            );
-            error_exit();
+    match (SOLVES.get(target_day - 1), INPUTS.get(target_day - 1)) {
+        (None, _) => {
+            print_err_and_exit((
+                format!("the day `{}` isn't available", target_day),
+                "This occurs when passing a target day greater\n\
+                 than 25 (or when the solve wasn't done yet).",
+            ));
         }
-    };
-    match SOLVES.get(target_day as usize - 1) {
-        Some(pair) => {
+        (_, None) => {
+            print_err_and_exit((
+                format!("the input for day `{}` isn't available", target_day),
+                "This occurs when the input file wasn't added yet.",
+            ));
+        }
+        (Some(pair), Some(input)) => {
             println!("Solves for the \x1b[96mday {:02}\x1b[0m:", target_day);
             println!(
-                "  \x1b[92mpart 1\x1b[0m: {}",
+                "  - part 1: \x1b[92m{}\x1b[0m",
                 pair.0
-                    .map(|f| f(ifl.content.clone()).to_string())
-                    .unwrap_or("not implemented yet".into())
+                    .map(|func| func(input).to_string())
+                    .unwrap_or("\x1b[91mnot implemented yet\x1b[0m".into())
             );
             println!(
-                "  \x1b[92mpart 2\x1b[0m: {}",
+                "  - part 2: \x1b[92m{}\x1b[0m",
                 pair.1
-                    .map(|f| f(ifl.content).to_string())
-                    .unwrap_or("not implemented yet".into())
-            );
-        }
-        None => {
-            println!(
-                "Solves for the \x1b[96mday {:02}\x1b[0m \x1b[91mwasn't implemented yet\x1b[0m.",
-                target_day
+                    .map(|func| func(input).to_string())
+                    .unwrap_or("\x1b[91mnot implemented yet\x1b[0m".into())
             );
         }
     }
