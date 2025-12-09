@@ -41,7 +41,6 @@ pub fn s2(input: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
     use crate::inputs::INPUTS;
     const INPUT: &str = "3   4
@@ -53,27 +52,25 @@ mod tests {
 
     #[test]
     fn test1() {
-        let result = s1(INPUT.into());
+        let result = s1(INPUT);
         assert_eq!(result, 11);
     }
 
     #[test]
     fn test2() {
-        let result = s2(INPUT.into());
+        let result = s2(INPUT);
         assert_eq!(result, 31);
     }
 
     #[test]
     fn run1() {
-        let input = InputFile::try_from(("inputs", 1)).unwrap();
-        let result = s1(input.content);
+        let result = s1(INPUTS[0]);
         assert_eq!(result, 1579939);
     }
 
     #[test]
     fn run2() {
-        let input = InputFile::try_from(("inputs", 1)).unwrap();
-        let result = s2(input.content);
+        let result = s2(INPUTS[0]);
         assert_eq!(result, 20351745);
     }
 }
