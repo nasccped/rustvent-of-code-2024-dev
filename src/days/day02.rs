@@ -74,26 +74,26 @@ mod tests {
 1 3 6 7 9";
 
     #[test]
-    fn solve1_test() {
+    fn test1() {
         let result = s1(INPUT.into());
         assert_eq!(result, 2);
     }
 
     #[test]
-    fn solve2_test() {
+    fn test2() {
         let result = s2(INPUT.into());
         assert_eq!(result, 4);
     }
 
     #[test]
-    fn solve1_run() {
+    fn run1() {
         let input = InputFile::try_from(("inputs", 2)).unwrap();
         let result = s1(input.content);
         assert_eq!(result, 369);
     }
 
     #[test]
-    fn solve2_run() {
+    fn run2() {
         let input = InputFile::try_from(("inputs", 2)).unwrap();
         let result = s2(input.content);
         assert_eq!(result, 428);

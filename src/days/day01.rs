@@ -52,26 +52,26 @@ mod tests {
 3   3";
 
     #[test]
-    fn solve1_test() {
+    fn test1() {
         let result = s1(INPUT.into());
         assert_eq!(result, 11);
     }
 
     #[test]
-    fn solve2_test() {
+    fn test2() {
         let result = s2(INPUT.into());
         assert_eq!(result, 31);
     }
 
     #[test]
-    fn solve1_run() {
+    fn run1() {
         let input = InputFile::try_from(("inputs", 1)).unwrap();
         let result = s1(input.content);
         assert_eq!(result, 1579939);
     }
 
     #[test]
-    fn solve2_run() {
+    fn run2() {
         let input = InputFile::try_from(("inputs", 1)).unwrap();
         let result = s2(input.content);
         assert_eq!(result, 20351745);
