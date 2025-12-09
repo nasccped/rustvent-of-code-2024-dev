@@ -6,7 +6,7 @@ pub mod day02;
 //pub mod day06;
 //pub mod day07;
 
-type SolvePair = (Option<fn(String) -> usize>, Option<fn(String) -> usize>);
+type SolvePair = (Option<fn(&str) -> usize>, Option<fn(&str) -> usize>);
 
 pub const SOLVES: [SolvePair; 2] = [
     (Some(day01::s1), Some(day01::s2)),

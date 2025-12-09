@@ -28,7 +28,7 @@ impl ReportTrait for Vec<i8> {
     }
 }
 
-pub fn s1(input: String) -> usize {
+pub fn s1(input: &str) -> usize {
     let reports = input.lines().fold(Vec::new(), |mut v: Vec<Vec<i8>>, row| {
         v.push(Vec::report_from_str(row));
         v
@@ -36,7 +36,7 @@ pub fn s1(input: String) -> usize {
     reports.into_iter().filter(|lvls| lvls.is_safe()).count()
 }
 
-pub fn s2(input: String) -> usize {
+pub fn s2(input: &str) -> usize {
     let mut reports = input.lines().fold(Vec::new(), |mut v: Vec<Vec<i8>>, row| {
         v.push(Vec::report_from_str(row));
         v

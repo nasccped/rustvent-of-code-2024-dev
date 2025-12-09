@@ -12,8 +12,8 @@ fn get_vecs(input: &str) -> (Vec<isize>, Vec<isize>) {
         })
 }
 
-pub fn s1(input: String) -> usize {
-    let (mut left, mut right) = get_vecs(&input);
+pub fn s1(input: &str) -> usize {
+    let (mut left, mut right) = get_vecs(input);
     left.sort();
     right.sort();
     left.iter()
@@ -22,7 +22,7 @@ pub fn s1(input: String) -> usize {
         .sum()
 }
 
-pub fn s2(input: String) -> usize {
+pub fn s2(input: &str) -> usize {
     let hm: HashMap<&str, (usize, usize)> = input.lines().fold(HashMap::new(), |mut hm, row| {
         let mut curr = row.split("   ");
         let mut next = || curr.next().unwrap();
@@ -43,7 +43,7 @@ pub fn s2(input: String) -> usize {
 mod tests {
 
     use super::*;
-    use crate::utils::InputFile;
+    use crate::inputs::INPUTS;
     const INPUT: &str = "3   4
 4   3
 2   5
