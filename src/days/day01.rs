@@ -51,26 +51,14 @@ mod tests {
 3   3";
 
     #[test]
-    fn test1() {
-        let result = s1(INPUT);
-        assert_eq!(result, 11);
+    fn part1() {
+        assert_eq!(s1(INPUT), 11);
+        assert_eq!(s1(INPUTS[0]), 1579939);
     }
 
     #[test]
-    fn test2() {
-        let result = s2(INPUT);
-        assert_eq!(result, 31);
-    }
-
-    #[test]
-    fn run1() {
-        let result = s1(INPUTS[0]);
-        assert_eq!(result, 1579939);
-    }
-
-    #[test]
-    fn run2() {
-        let result = s2(INPUTS[0]);
-        assert_eq!(result, 20351745);
+    fn part2() {
+        assert_eq!(s2(INPUT), 31);
+        assert_eq!(s2(INPUTS[0]), 20351745);
     }
 }

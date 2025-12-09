@@ -73,26 +73,14 @@ mod tests {
 1 3 6 7 9";
 
     #[test]
-    fn test1() {
-        let result = s1(INPUT);
-        assert_eq!(result, 2);
+    fn part1() {
+        assert_eq!(s1(INPUT), 2);
+        assert_eq!(s1(INPUTS[1]), 369);
     }
 
     #[test]
-    fn test2() {
-        let result = s2(INPUT);
-        assert_eq!(result, 4);
-    }
-
-    #[test]
-    fn run1() {
-        let result = s1(INPUTS[1]);
-        assert_eq!(result, 369);
-    }
-
-    #[test]
-    fn run2() {
-        let result = s2(INPUTS[1]);
-        assert_eq!(result, 428);
+    fn part2() {
+        assert_eq!(s2(INPUT), 4);
+        assert_eq!(s2(INPUTS[1]), 428);
     }
 }
