@@ -1,3 +1,5 @@
+use crate::utils::GetElementAt;
+
 const XMAS: &str = "XMAS";
 const MAS: &str = "MAS";
 const SAM: &str = "SAM";
@@ -44,7 +46,6 @@ impl<'a> Coordinate<'a> {
 }
 
 trait XMasTrait {
-    fn get_char_at(&self, coord: &Coordinate) -> Option<char>;
     fn y_out_of_range(&self, y: isize) -> bool;
     fn x_out_of_range(&self, x: isize) -> bool;
     fn explore_linear(&self, coord: &mut Coordinate, target: &str) -> bool;
@@ -52,16 +53,6 @@ trait XMasTrait {
 }
 
 impl XMasTrait for Vec<&str> {
-    fn get_char_at(&self, coord: &Coordinate) -> Option<char> {
-        let Coordinate { y, x, .. } = coord;
-        match (*y, *x) {
-            (y, x) if y < 0 || x < 0 => None,
-            (y, x) => self
-                .get(y as usize)
-                .map(|row| row.chars().nth(x as usize))?,
-        }
-    }
-
     fn y_out_of_range(&self, y: isize) -> bool {
         y < 0 || y >= self.len() as isize
     }
@@ -71,7 +62,7 @@ impl XMasTrait for Vec<&str> {
     }
 
     fn explore_linear(&self, coord: &mut Coordinate, target: &str) -> bool {
-        match (self.get_char_at(coord), target) {
+        match (self.get_element_at(coord), target) {
             (_, "") => true,
             (Some(a), b) if b.chars().next().is_some_and(|c| c == a) => {
                 let r = self.explore_linear(coord.go_next(), &target[1..]);
@@ -92,6 +83,18 @@ impl XMasTrait for Vec<&str> {
         coord.go_next();
         coord.next = &go_down_left;
         self.explore_linear(coord.go_previous(), MAS) || self.explore_linear(&mut coord, SAM)
+    }
+}
+
+impl GetElementAt<char, &Coordinate<'_>> for Vec<&str> {
+    fn get_element_at(&self, coord: &Coordinate) -> Option<char> {
+        let Coordinate { y, x, .. } = coord;
+        match (*y, *x) {
+            (y, x) if y < 0 || x < 0 => None,
+            (y, x) => self
+                .get(y as usize)
+                .map(|row| row.chars().nth(x as usize))?,
+        }
     }
 }
 

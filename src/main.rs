@@ -1,6 +1,7 @@
 mod days;
 mod err_report;
 mod inputs;
+mod utils;
 
 use days::SOLVES;
 use err_report::ErrReport;
