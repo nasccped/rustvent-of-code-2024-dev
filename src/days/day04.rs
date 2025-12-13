@@ -44,15 +44,15 @@ impl<'a> Coordinate<'a> {
 }
 
 trait XMasTrait {
-    fn get_char_at<'a>(&self, coord: &'a Coordinate) -> Option<char>;
+    fn get_char_at(&self, coord: &Coordinate) -> Option<char>;
     fn y_out_of_range(&self, y: isize) -> bool;
     fn x_out_of_range(&self, x: isize) -> bool;
-    fn explore_linear<'a>(&self, coord: &'a mut Coordinate, target: &str) -> bool;
+    fn explore_linear(&self, coord: &mut Coordinate, target: &str) -> bool;
     fn is_x_mas(&self, y: isize, x: isize) -> bool;
 }
 
 impl XMasTrait for Vec<&str> {
-    fn get_char_at<'a>(&self, coord: &'a Coordinate) -> Option<char> {
+    fn get_char_at(&self, coord: &Coordinate) -> Option<char> {
         let Coordinate { y, x, .. } = coord;
         match (*y, *x) {
             (y, x) if y < 0 || x < 0 => None,
@@ -70,7 +70,7 @@ impl XMasTrait for Vec<&str> {
         x < 0 || x >= self.len() as isize
     }
 
-    fn explore_linear<'a>(&self, coord: &'a mut Coordinate, target: &str) -> bool {
+    fn explore_linear(&self, coord: &mut Coordinate, target: &str) -> bool {
         match (self.get_char_at(coord), target) {
             (_, "") => true,
             (Some(a), b) if b.chars().next().is_some_and(|c| c == a) => {
